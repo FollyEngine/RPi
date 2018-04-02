@@ -18,6 +18,9 @@ from threading import Event
 # start pcscd daemon
 from subprocess import call
 
+import paho.mqtt.publish as publish
+import json
+
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
 
 # a simple card observer that prints inserted/removed cards
@@ -38,6 +41,13 @@ class PrintObserver(CardObserver):
             #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
             tagid = toHexString(response).replace(' ','')
             print ("tagid ",tagid)
+
+            payload = json.dumps({
+                    'id': 'one',
+                    'tag': tagid,
+                    'event': 'inserted'
+                });
+            publish.single("realengine/rfid/inserted", payload, hostname="odroid")
 
 
         for card in removedcards:
