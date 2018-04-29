@@ -9,3 +9,6 @@ shell:
 
 build:
 	docker build -t $(RFIDIMAGE) rfid
+
+push:
+	docker push ${RFIDIMAGE}
