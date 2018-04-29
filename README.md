@@ -2,6 +2,20 @@
 
 Simple Python service that listens to the rfid reader, and when something happens, relays that rfid tag's id to the mqtt
 
+## setup and run
+
+Either use the Docker container, see the Makefile, 
+
+or if running locally, use the `local.sh` script
+
+then to start the service on reboot, use `contrab -e` and add a line like
+
+```
+@reboot cd rpi; ./local.sh 10.10.11.2 > local.log 2&>1
+```
+
+>> **NOTE:** this requires the NFC reader to be connected before booting.
+
 ## some dev links
 
 driver and test tool install:

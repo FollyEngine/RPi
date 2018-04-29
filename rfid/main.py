@@ -2,6 +2,8 @@
 from __future__ import print_function
 from time import sleep
 
+import sys
+
 import smartcard.System
 
 from smartcard.CardMonitoring import CardMonitor, CardObserver
@@ -22,6 +24,7 @@ import paho.mqtt.publish as publish
 import json
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
+mqttHost = "10.10.11.2"
 
 # a simple card observer that prints inserted/removed cards
 class PrintObserver(CardObserver):
@@ -42,12 +45,13 @@ class PrintObserver(CardObserver):
             tagid = toHexString(response).replace(' ','')
             print ("tagid ",tagid)
 
-            payload = json.dumps({
-                    'id': 'one',
-                    'tag': tagid,
-                    'event': 'inserted'
-                });
-            publish.single("realengine/rfid/inserted", payload, hostname="odroid")
+            #payload = json.dumps({
+            #        'id': 'one',
+            #        'tag': tagid,
+            #        'event': 'inserted'
+            #    });
+            #publish.single("realengine/rfid/inserted", payload, hostname=mqttHost)
+            publish.single("realengine/rfid/inserted", tagid, hostname="10.10.11.2")
 
 
         for card in removedcards:
@@ -57,6 +61,12 @@ class PrintObserver(CardObserver):
 
 ###########################################
 if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+        mqttHost = sys.argv[1]
+
+    print("Connecting to MQTT at: %s" % mqttHost)
+
     call(['pcscd'])
     # TODO: detect if there isn't a reader pluigged in, and exit...
     readers = smartcard.System.readers()
@@ -81,7 +91,10 @@ if __name__ == '__main__':
 
         except CardRequestTimeoutException:
             print("retry:")
-
+           
+        except KeyboardInterrupt:
+			print("exit")
+			sys.exit()
 
     # don't forget to remove observer, or the
     # monitor will poll forever...
