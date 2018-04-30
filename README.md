@@ -11,7 +11,7 @@ or if running locally, use the `local.sh` script
 then to start the service on reboot, use `contrab -e` and add a line like
 
 ```
-@reboot cd rpi; ./local.sh 10.10.11.2 > local.log 2&>1
+@reboot cd rpi; python rfid/main.py 10.10.11.2 > local.log 2>&1
 ```
 
 >> **NOTE:** this requires the NFC reader to be connected before booting.

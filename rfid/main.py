@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     print("Connecting to MQTT at: %s" % mqttHost)
 
-    call(['pcscd'])
+    call(['/usr/sbin/pcscd'])
     # TODO: detect if there isn't a reader pluigged in, and exit...
     readers = smartcard.System.readers()
     sleep(1)
