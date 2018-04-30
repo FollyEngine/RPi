@@ -22,9 +22,11 @@ from subprocess import call
 
 import paho.mqtt.publish as publish
 import json
+import socket
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
 mqttHost = "10.10.11.2"
+myHostname = socket.gethostname()
 
 # a simple card observer that prints inserted/removed cards
 class PrintObserver(CardObserver):
@@ -51,7 +53,7 @@ class PrintObserver(CardObserver):
             #        'event': 'inserted'
             #    });
             #publish.single("realengine/rfid/inserted", payload, hostname=mqttHost)
-            publish.single("realengine/rfid/inserted", tagid, hostname="10.10.11.2")
+            publish.single("realengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
 
 
         for card in removedcards:
@@ -82,6 +84,8 @@ if __name__ == '__main__':
     cardmonitor = CardMonitor()
     cardobserver = PrintObserver()
     cardmonitor.addObserver(cardobserver)
+
+    publish.single("status/"+myHostname+"/rfid", "listening", hostname=mqttHost)
 
     while True:
         cardtype = AnyCardType()
