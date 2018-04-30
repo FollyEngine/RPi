@@ -12,7 +12,7 @@ fi
 	
 # get pyscard
 sudo apt-get update \
-    && sudo apt-get install -yq python-pyscard python-pip pcscd git python-setuptools libpcsclite-dev python-dev
+    && sudo apt-get install -yq python-pyscard python-pip pcscd git python-setuptools libpcsclite-dev python-dev mosquitto-clients
 
 cd rfid
 sudo pip install --no-cache-dir -r requirements.txt
