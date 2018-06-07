@@ -1,10 +1,11 @@
 import paho.mqtt.client as mqtt #import the client1
 import time
 import sys
+import socket
 from subprocess import call
 import pygame
 
-host="hostname"
+hostname = socket.gethostname()
 testsound='/app/test.wav'
 
 pygame.mixer.init()
@@ -34,8 +35,8 @@ def on_message(client, userdata, message):
     elif mqtt.topic_matches_sub("play/test", message.topic):
         print("everyone plays test.wav")
         play(testsound)
-    elif mqtt.topic_matches_sub("play/"+host, message.topic):
-        print(host+" plays "+payload)
+    elif mqtt.topic_matches_sub("play/"+hostname, message.topic):
+        print(hostname+" plays "+payload)
         play(payload)
 
 ########################################
@@ -48,7 +49,7 @@ print("connecting to broker")
 client.connect(broker_address) #connect to broker
 
 client.subscribe("#")
-client.publish("status/"+host+"/audio","STARTED")
+client.publish("status/"+hostname+"/audio","STARTED")
 
 pygame.mixer.music.load(testsound)
 pygame.mixer.music.play()
