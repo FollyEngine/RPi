@@ -5,6 +5,12 @@ from subprocess import call
 
 host="hostname"
 
+
+############
+def play(audiofile):
+    # TODO: if its a URL, download it (unless we already have it)
+    call(['/usr/bin/paplay', audiofile])
+
 ############
 def on_message(client, userdata, message):
     payload=str(message.payload.decode("utf-8"))
@@ -15,11 +21,11 @@ def on_message(client, userdata, message):
     print("message retain flag=",message.retain)
     if mqtt.topic_matches_sub("play/all", message.topic):
         # everyone
-        call(['/usr/bin/paplay', payload])
+        play(payload)
     elif mqtt.topic_matches_sub("play/test", message.topic):
-        call(['/usr/bin/paplay', 'test.wav'])
+        play('/app/test.wav')
     elif mqtt.topic_matches_sub("play/"+host, message.topic):
-        call(['/usr/bin/paplay', payload])
+        play(payload)
 
 ########################################
 broker_address="mqs_server"
