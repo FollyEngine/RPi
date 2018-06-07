@@ -8,15 +8,26 @@ stack: build
 	docker stack up -c mq_server.yml mqs
 
 mq_ping:
-	docker run --rm -it --network mq_net mosquitto-clients mosquitto_pub -h mqs_server  -t 'hello' -m 'world'
+	docker run --rm -it --network mq_net mosquitto-clients mosquitto_pub -h mqs_server  -t 'play/test' -m 'test'
 
 audio:
+	docker run -it \
+		--device /dev/snd \
+		-e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
+		-v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
+		-v ~/.config/pulse/cookie:/root/.config/pulse/cookie \
+		--group-add $(shell getent group audio | cut -d: -f3) \
+		--network mq_net \
+		-v $(PWD)/audio/:/app \
+			audio
+
+audio-shell:
 	docker run --rm -it \
 		-v pulseaudio:/run/pulse \
 		--user 1000 \
 		-v $(PWD)/audio/:/app \
 		--network mq_net \
-		audio
+		audio bash
 
 run:
 	docker run --rm -it  --privileged -v /dev/bus/usb:/dev/bus/usb $(RFIDIMAGE)

@@ -2,14 +2,22 @@ import paho.mqtt.client as mqtt #import the client1
 import time
 import sys
 from subprocess import call
+import pygame
 
 host="hostname"
+testsound='/app/test.wav'
 
+pygame.mixer.init()
+pygame.mixer.pre_init(44100, -16, 2, 2048)
+pygame.init()
 
 ############
 def play(audiofile):
     # TODO: if its a URL, download it (unless we already have it)
-    call(['/usr/bin/paplay', audiofile])
+    #call(['/usr/bin/paplay', audiofile])
+    pygame.mixer.music.load(audiofile)
+    pygame.mixer.music.play()
+
 
 ############
 def on_message(client, userdata, message):
@@ -21,10 +29,13 @@ def on_message(client, userdata, message):
     print("message retain flag=",message.retain)
     if mqtt.topic_matches_sub("play/all", message.topic):
         # everyone
+        print("everyone plays "+payload)
         play(payload)
     elif mqtt.topic_matches_sub("play/test", message.topic):
-        play('/app/test.wav')
+        print("everyone plays test.wav")
+        play(testsound)
     elif mqtt.topic_matches_sub("play/"+host, message.topic):
+        print(host+" plays "+payload)
         play(payload)
 
 ########################################
@@ -38,6 +49,9 @@ client.connect(broker_address) #connect to broker
 
 client.subscribe("#")
 client.publish("status/"+host+"/audio","STARTED")
+
+pygame.mixer.music.load(testsound)
+pygame.mixer.music.play()
 
 while True:
     try:
