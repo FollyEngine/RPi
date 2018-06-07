@@ -1,0 +1,11 @@
+version: '3.4'
+networks:
+  net:
+    external:
+      name: mq_net
+
+services:
+  server:
+    image: eclipse-mosquitto
+    networks:
+      - net
