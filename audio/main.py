@@ -59,7 +59,9 @@ client.on_message=on_message #attach function to callback
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
-client.subscribe("#")
+client.subscribe("follyengine/+/play")
+client.subscribe("follyengine/+/test")
+
 client.publish("status/"+hostname+"/audio","STARTED")
 
 play(testsound)
