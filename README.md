@@ -15,7 +15,7 @@ or if running locally, configure the system by running
 then to start the service on reboot, use `contrab -e` and add a line like
 
 ```
-@reboot cd rpi; ./local.sh > local.log 2>&1
+@reboot cd RPi; ./local.sh > local.log 2>&1
 ```
 
 >> **NOTE:** this requires the NFC reader to be connected before booting.
