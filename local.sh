@@ -13,7 +13,9 @@ echo "this host called $HOSTNAME"
 
 # 
 if [[ ¨$1¨ != ¨--setup¨ ]]; then
-	exec python rfid/main.py $MQTTHOST
+	nohup python rfid/main.py $MQTTHOST > rfid.log 2>&1
+
+	echo "DONE"
 	exit
 fi
 
