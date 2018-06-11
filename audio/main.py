@@ -57,25 +57,23 @@ if len(sys.argv) > 2:
     sounddir = sys.argv[2]
 
 
-client = mqtt.Client("P1") #create new instance
+client = mqtt.Client(hostname+"_audio") #create new instance
 client.on_message=on_message #attach function to callback
 client.on_disconnect=on_disconnect
 
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
-client.subscribe("follyengine/+/play")
-client.subscribe("follyengine/+/test")
+client.subscribe("follyengine/"+hostname+"/play")
+#client.subscribe("follyengine/+/test")
 
 client.publish("status/"+hostname+"/audio","STARTED")
 
 play(testsound)
 
-while True:
-    try:
-        client.loop(0.01)
-    except KeyboardInterrupt:
-        print("exit")
-        break
+try:
+    client.loop_forever()
+except KeyboardInterrupt:
+    print("exit")
 
 client.publish("status/"+host+"/audio","STOPPED")

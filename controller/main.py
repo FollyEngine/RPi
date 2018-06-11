@@ -42,16 +42,23 @@ def on_message(client, userdata, message):
     print("message topic=",message.topic)
     print("message qos=",message.qos)
     print("message retain flag=",message.retain)
+
     if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
         # everyone
         print("everyone plays "+payload)
         play(payload)
     elif mqtt.topic_matches_sub("follyengine/"+mqttHost+"/rfid", message.topic):
         print(myHostname+" got "+payload)
-        play(pillar[payload])
+        try:
+            play(pillar[payload])
+        except:
+            play(pillar["(null)"])
     elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
         print(myHostname+" got "+payload)
-        play(pillar[payload])
+        try:
+            play(pillar[payload])
+        except:
+            play(pillar["(null)"])
 
 ########################################
 
@@ -61,22 +68,20 @@ if len(sys.argv) > 2:
     sounddir = sys.argv[2]
 
 
-client = mqtt.Client("P1") #create new instance
+client = mqtt.Client(myHostname+"_controller") #create new instance
 client.on_message=on_message #attach function to callback
 
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
-client.subscribe("#")
-client.publish("status/"+myHostname+"/controller","STARTED")
+client.subscribe("follyengine/"+myHostname+"/rfid")
 
-play(testsound)
+#client.publish("status/"+myHostname+"/controller","STARTED")
+#play(testsound)
 
-while True:
-    try:
-        client.loop(0.01)
-    except KeyboardInterrupt:
-        print("exit")
-        break
+try:
+    client.loop_forever()
+except KeyboardInterrupt:
+    print("exit")
 
-client.publish("status/"+host+"/controller","STOPPED")
+client.publish("status/"+myHostname+"/controller","STOPPED")
