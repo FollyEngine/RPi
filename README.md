@@ -6,12 +6,16 @@ Simple Python service that listens to the rfid reader, and when something happen
 
 Either use the Docker container, see the Makefile, 
 
-or if running locally, use the `local.sh` script
+or if running locally, configure the system by running
+
+```
+./local.sh --setup
+```
 
 then to start the service on reboot, use `contrab -e` and add a line like
 
 ```
-@reboot cd rpi; python rfid/main.py 10.10.11.2 > local.log 2>&1
+@reboot cd rpi; ./local.sh > local.log 2>&1
 ```
 
 >> **NOTE:** this requires the NFC reader to be connected before booting.
