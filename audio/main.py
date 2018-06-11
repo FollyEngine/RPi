@@ -68,9 +68,9 @@ play(testsound)
 
 while True:
     try:
-        client.loop()
+        client.loop(0.01)
     except KeyboardInterrupt:
         print("exit")
-        sys.exit()
+        break
 
 client.publish("status/"+host+"/audio","STOPPED")
