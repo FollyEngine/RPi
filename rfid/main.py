@@ -25,7 +25,7 @@ import json
 import socket
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
-mqttHost = "10.10.11.2"
+mqttHost = "mqtt"
 myHostname = socket.gethostname()
 
 # a simple card observer that prints inserted/removed cards

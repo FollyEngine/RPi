@@ -5,6 +5,8 @@ import socket
 from subprocess import call
 import pygame
 
+mqttHost = "mqtt"
+
 hostname = socket.gethostname()
 testsound='/app/test.wav'
 
@@ -40,13 +42,16 @@ def on_message(client, userdata, message):
         play(payload)
 
 ########################################
-broker_address="mqs_server"
-#broker_address="iot.eclipse.org"
-print("creating new instance")
+
+if len(sys.argv) > 1:
+    mqttHost = sys.argv[1]
+
+
 client = mqtt.Client("P1") #create new instance
 client.on_message=on_message #attach function to callback
-print("connecting to broker")
-client.connect(broker_address) #connect to broker
+
+print("Connecting to MQTT at: %s" % mqttHost)
+client.connect(mqttHost) #connect to broker
 
 client.subscribe("#")
 client.publish("status/"+hostname+"/audio","STARTED")
