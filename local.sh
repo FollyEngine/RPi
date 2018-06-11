@@ -13,9 +13,9 @@ echo "this host called $HOSTNAME"
 
 # 
 if [[ ¨$1¨ != ¨--setup¨ ]]; then
-	nohup python rfid/main.py $MQTTHOST > rfid.log &
-	nohup python audio/main.py $MQTTHOST > audio.log &
-	nohup python controller/main.py $MQTTHOST > controller.log &
+	/usr/bin/nohup python rfid/main.py $MQTTHOST > rfid.log &
+	/usr/bin/nohup python audio/main.py $MQTTHOST > audio.log &
+	/usr/bin/nohup python controller/main.py $MQTTHOST > controller.log &
 
 	echo "DONE"
 	exit
