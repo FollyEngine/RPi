@@ -25,6 +25,10 @@ def play(audiofile):
     pygame.mixer.music.load(audiofile)
     pygame.mixer.music.play()
 
+############
+def on_disconnect(client, userdata,rc=0):
+    logging.debug("DisConnected result code "+str(rc))
+    #client.loop_stop()
 
 ############
 def on_message(client, userdata, message):
@@ -55,6 +59,7 @@ if len(sys.argv) > 2:
 
 client = mqtt.Client("P1") #create new instance
 client.on_message=on_message #attach function to callback
+client.on_disconnect=on_disconnect
 
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
