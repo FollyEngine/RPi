@@ -76,8 +76,8 @@ client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+myHostname+"/rfid")
 
-#client.publish("status/"+myHostname+"/controller","STARTED")
-#play(testsound)
+client.publish("status/"+myHostname+"/controller","STARTED")
+play(testsound)
 
 try:
     client.loop_forever()

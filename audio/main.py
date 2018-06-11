@@ -65,7 +65,7 @@ print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+hostname+"/play")
-#client.subscribe("follyengine/+/test")
+client.subscribe("follyengine/+/test")
 
 client.publish("status/"+hostname+"/audio","STARTED")
 
