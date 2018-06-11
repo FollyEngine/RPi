@@ -40,25 +40,29 @@ class PrintObserver(CardObserver):
         for card in addedcards:
             print("+Inserted: ", toHexString(card.atr))
 
-            connection = card.createConnection()
-            connection.connect( CardConnection.T1_protocol )
-            response, sw1, sw2 = connection.transmit(GETUID)
-            #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
-            tagid = toHexString(response).replace(' ','')
-            print ("tagid ",tagid)
-
-            #payload = json.dumps({
-            #        'id': 'one',
-            #        'tag': tagid,
-            #        'event': 'inserted'
-            #    });
-            #publish.single("realengine/rfid/inserted", payload, hostname=mqttHost)
-            publish.single("realengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
+            try:
+                connection = card.createConnection()
+                connection.connect( CardConnection.T1_protocol )
+                response, sw1, sw2 = connection.transmit(GETUID)
+                #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
+                tagid = toHexString(response).replace(' ','')
+                print ("tagid ",tagid)
+    
+                #payload = json.dumps({
+                #        'id': 'one',
+                #        'tag': tagid,
+                #        'event': 'inserted'
+                #    });
+                #publish.single("realengine/rfid/inserted", payload, hostname=mqttHost)
+                publish.single("realengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
+            except:
+                print("ERROR")
 
 
         for card in removedcards:
             print("-Removed:  ", toHexString(card.atr))
 
+            publish.single("realengine/"+myHostname+"/rfid", "REMOVED", hostname=mqttHost)
 
 
 ###########################################
