@@ -8,7 +8,8 @@ import pygame
 mqttHost = "mqtt"
 
 hostname = socket.gethostname()
-testsound='/app/test.wav'
+sounddir = '/mnt/'
+testsound='test.wav'
 
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -18,7 +19,7 @@ pygame.init()
 def play(audiofile):
     # TODO: if its a URL, download it (unless we already have it)
     #call(['/usr/bin/paplay', audiofile])
-    pygame.mixer.music.load(audiofile)
+    pygame.mixer.music.load(sounddir + audiofile)
     pygame.mixer.music.play()
 
 
@@ -45,6 +46,8 @@ def on_message(client, userdata, message):
 
 if len(sys.argv) > 1:
     mqttHost = sys.argv[1]
+if len(sys.argv) > 2:
+    sounddir = sys.argv[2]
 
 
 client = mqtt.Client("P1") #create new instance
@@ -56,8 +59,7 @@ client.connect(mqttHost) #connect to broker
 client.subscribe("#")
 client.publish("status/"+hostname+"/audio","STARTED")
 
-pygame.mixer.music.load(testsound)
-pygame.mixer.music.play()
+play(testsound)
 
 while True:
     try:
