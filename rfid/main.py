@@ -53,8 +53,8 @@ class PrintObserver(CardObserver):
                 #        'tag': tagid,
                 #        'event': 'inserted'
                 #    });
-                #publish.single("realengine/rfid/inserted", payload, hostname=mqttHost)
-                publish.single("realengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
+                #publish.single("follyengine/rfid/inserted", payload, hostname=mqttHost)
+                publish.single("follyengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
             except:
                 print("ERROR")
 
@@ -62,7 +62,7 @@ class PrintObserver(CardObserver):
         for card in removedcards:
             print("-Removed:  ", toHexString(card.atr))
 
-            publish.single("realengine/"+myHostname+"/rfid", "REMOVED", hostname=mqttHost)
+            publish.single("follyengine/"+myHostname+"/rfid", "REMOVED", hostname=mqttHost)
 
 
 ###########################################

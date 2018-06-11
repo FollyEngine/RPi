@@ -31,14 +31,14 @@ def on_message(client, userdata, message):
     print("message topic=",message.topic)
     print("message qos=",message.qos)
     print("message retain flag=",message.retain)
-    if mqtt.topic_matches_sub("play/all", message.topic):
+    if mqtt.topic_matches_sub("follyengine/all/play", message.topic):
         # everyone
         print("everyone plays "+payload)
         play(payload)
-    elif mqtt.topic_matches_sub("play/test", message.topic):
+    elif mqtt.topic_matches_sub("follyengine/all/test", message.topic):
         print("everyone plays test.wav")
         play(testsound)
-    elif mqtt.topic_matches_sub("play/"+hostname, message.topic):
+    elif mqtt.topic_matches_sub("follyengine/"+hostname+"/play", message.topic):
         print(hostname+" plays "+payload)
         play(payload)
 
