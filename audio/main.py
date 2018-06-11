@@ -19,7 +19,10 @@ pygame.init()
 def play(audiofile):
     # TODO: if its a URL, download it (unless we already have it)
     #call(['/usr/bin/paplay', audiofile])
-    pygame.mixer.music.load(sounddir + audiofile)
+    if not audiofile.startswith('/'):
+        audiofile = sounddir + audiofile
+
+    pygame.mixer.music.load(audiofile)
     pygame.mixer.music.play()
 
 
