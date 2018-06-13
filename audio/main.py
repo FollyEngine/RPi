@@ -22,8 +22,11 @@ def play(audiofile):
     if not audiofile.startswith('/'):
         audiofile = sounddir + audiofile
 
-    pygame.mixer.music.load(audiofile)
-    pygame.mixer.music.play()
+    try:
+        pygame.mixer.music.load(audiofile)
+        pygame.mixer.music.play()
+    except:
+        print("Failed to play %s" % audiofile)
 
 ############
 def on_disconnect(client, userdata,rc=0):
