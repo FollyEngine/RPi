@@ -16,6 +16,10 @@ echo "this host called $HOSTNAME"
 
 # 
 if [[ ¨$1¨ != ¨--setup¨ ]]; then
+
+	sleep 5
+	ping -c 1 $MQTTHOST
+
 	/usr/bin/nohup python rfid/main.py $MQTTHOST > rfid.log &
 	/usr/bin/nohup python audio/main.py $MQTTHOST > audio.log &
 	/usr/bin/nohup python controller/main.py $MQTTHOST > controller.log &
