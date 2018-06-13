@@ -30,8 +30,8 @@ pillar["FBD221EC"] = "/usr/share/scratch/Media/Sounds/Animal/WolfHowl.wav"
 
 ############
 def play(audiofile):
-   #publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
-   publish.single("follyengine/"+mqttHost+"/play", audiofile, hostname=mqttHost)
+   publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
+   #publish.single("follyengine/"+mqttHost+"/play", audiofile, hostname=mqttHost)
 
 
 ############
