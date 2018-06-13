@@ -1,5 +1,8 @@
 #!/bin/bash -ex
 
+# default MQTTHOST to `mqtt` as a default
+export MQTTHOST='mqtt'
+
 # do we have a cfg sdcard?
 if sudo fdisk -l | grep sda1 | grep FAT32; then
 	if ! mount | grep mnt | cut -d ' ' -f 1 | grep /dev/sda1; then
