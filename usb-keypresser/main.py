@@ -14,7 +14,7 @@ sounddir = '/mnt/'
 
 ############
 # from https://raspberrypi.stackexchange.com/questions/64521/pi-zero-w-hid-keyboard-layout
- azerty_hid_codes = {
+azerty_hid_codes = {
     'a' : (0, 20), 'b' : (0, 5), 'c' : (0, 6),
     'd' : (0, 7), 'e' : (0, 8), 'f' : (0, 9),
     'g' : (0, 10), 'h' : (0, 11), 'i' : (0, 12),
@@ -79,11 +79,13 @@ def on_message(client, userdata, message):
         try:
             play(payload)
         except:
+            print("error")
     elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/"+serviceName, message.topic):
         print(myHostname+" got "+payload)
         try:
             play(payload)
         except:
+            print("error")
 
 ########################################
 
