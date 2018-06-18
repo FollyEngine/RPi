@@ -1,0 +1,50 @@
+
+
+# rfid -> object name
+items:
+    "REMOVED": "removed"
+    "(null)": "none"
+    # The RFID tags I gave to Jen
+    "2A70F8A3": "Bird"
+    "1A3602A4": "Dog1"
+    "8A6BFFA3": "Duck"
+    "8AF5FCA3": "Goose"
+    "5ABB02A4": "HorseGallop"
+    "1A6A00A4": "Kitten"
+    "AA7EF5A3": "Owl"
+    "9B1147EC": "Rooster"
+    "FBD221EC": "WolfHowl"
+    # more ...
+    "CAC800A4": "Laugh-female"
+    "7A9CD89F": "PartyNoise"
+
+
+# pillar ->
+#      object name -> sound file path
+pillars:
+  default:
+    removed: "/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
+    none: "/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"
+    #
+    Bird: "/usr/share/scratch/Media/Sounds/Animal/Bird.wav"
+    Dog1: "/usr/share/scratch/Media/Sounds/Animal/Dog1.wav"
+    Duck: "/usr/share/scratch/Media/Sounds/Animal/Duck.wav"
+    Goose: "/usr/share/scratch/Media/Sounds/Animal/Goose.wav"
+    HorseGallop: "/usr/share/scratch/Media/Sounds/Animal/HorseGallop.wav"
+    Kitten: "/usr/share/scratch/Media/Sounds/Animal/Kitten.wav"
+    Owl: "/usr/share/scratch/Media/Sounds/Animal/Owl.wav"
+    Rooster: "/usr/share/scratch/Media/Sounds/Animal/Rooster.wav"
+    WolfHowl: "/usr/share/scratch/Media/Sounds/Animal/WolfHowl.wav"
+    #
+    "laugh-male2": "/usr/share/scratch/Media/Sounds/Human/Laugh-male2.wav"
+    "Laugh-female": "/usr/share/scratch/Media/Sounds/Human/Laugh-female.wav"
+    "Cough-male": "/usr/share/scratch/Media/Sounds/Human/Cough-male.wav"
+    "Laugh-male1": "/usr/share/scratch/Media/Sounds/Human/Laugh-male1.wav"
+    "Sneeze-male": "/usr/share/scratch/Media/Sounds/Human/Sneeze-male.wav"
+    "Footsteps-1": "/usr/share/scratch/Media/Sounds/Human/Footsteps-1.wav"
+    "FingerSnap": "/usr/share/scratch/Media/Sounds/Human/FingerSnap.wav"
+    "Sneeze-female": "/usr/share/scratch/Media/Sounds/Human/Sneeze-female.wav"
+    "Scream-male1": "/usr/share/scratch/Media/Sounds/Human/Scream-male1.wav"
+    "Scream-female": "/usr/share/scratch/Media/Sounds/Human/Scream-female.wav"
+    "Cough-female": "/usr/share/scratch/Media/Sounds/Human/Cough-female.wav"
+    "PartyNoise": "/usr/share/scratch/Media/Sounds/Human/PartyNoise.wav"

@@ -3,7 +3,11 @@ import paho.mqtt.publish as publish
 import time
 import sys
 import socket
-from subprocess import call
+#from subprocess import call
+import yaml
+
+with open("config", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 mqttHost = "mqtt"
 
@@ -48,17 +52,19 @@ def on_message(client, userdata, message):
         print("everyone plays "+payload)
         play(payload)
     elif mqtt.topic_matches_sub("follyengine/"+mqttHost+"/rfid", message.topic):
-        print(myHostname+" got "+payload)
+        item = cfg["items"][payload]
+        print(myHostname+" got "+payload+" which is: "+item)
         try:
-            play(pillar[payload])
+            play(cfg["pillars"]["default"][item])
         except:
-            play(pillar["(null)"])
+            play(cfg["pillars"]["default"]["(null)"])
     elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
-        print(myHostname+" got "+payload)
+        item = cfg["items"][payload]
+        print(myHostname+" got "+payload+" which is: "+item)
         try:
-            play(pillar[payload])
+            play(cfg["pillars"]["default"][item])
         except:
-            play(pillar["(null)"])
+            play(cfg["pillars"]["default"]["(null)"])
 
 ########################################
 

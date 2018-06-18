@@ -30,7 +30,7 @@ def play(audiofile):
 
 ############
 def on_disconnect(client, userdata,rc=0):
-    logging.debug("DisConnected result code "+str(rc))
+    print("DisConnected result code "+str(rc))
     #client.loop_stop()
 
 ############
