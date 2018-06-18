@@ -2,7 +2,6 @@ import paho.mqtt.client as mqtt #import the client1
 import time
 import sys
 import socket
-from subprocess import call
 import pygame
 
 mqttHost = "mqtt"
@@ -17,10 +16,13 @@ pygame.init()
 
 ############
 def play(audiofile):
-    # TODO: if its a URL, download it (unless we already have it)
-    #call(['/usr/bin/paplay', audiofile])
+    if pygame.mixer.music.get_busy():
+        return
+
     if not audiofile.startswith('/'):
         audiofile = sounddir + audiofile
+
+    # TODO: if its a URL, download it (unless we already have it)
 
     try:
         pygame.mixer.music.load(audiofile)
@@ -79,4 +81,4 @@ try:
 except KeyboardInterrupt:
     print("exit")
 
-client.publish("status/"+host+"/audio","STOPPED")
+client.publish("status/"+hostname+"/audio","STOPPED")

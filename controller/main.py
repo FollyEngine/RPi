@@ -15,22 +15,6 @@ myHostname = socket.gethostname()
 sounddir = '/mnt/'
 testsound='test.wav'
 
-pillar = {}
-pillar["REMOVED"] = "/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
-pillar["(null)"] = "/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"
-
-pillar["2A70F8A3"] = "/usr/share/scratch/Media/Sounds/Animal/Bird.wav"
-pillar["1A3602A4"] = "/usr/share/scratch/Media/Sounds/Animal/Dog1.wav"
-pillar["8A6BFFA3"] = "/usr/share/scratch/Media/Sounds/Animal/Duck.wav"
-pillar["8AF5FCA3"] = "/usr/share/scratch/Media/Sounds/Animal/Goose.wav"
-pillar["5ABB02A4"] = "/usr/share/scratch/Media/Sounds/Animal/HorseGallop.wav"
-pillar["1A6A00A4"] = "/usr/share/scratch/Media/Sounds/Animal/Kitten.wav"
-pillar["AA7EF5A3"] = "/usr/share/scratch/Media/Sounds/Animal/Owl.wav"
-pillar["9B1147EC"] = "/usr/share/scratch/Media/Sounds/Animal/Rooster.wav"
-pillar["FBD221EC"] = "/usr/share/scratch/Media/Sounds/Animal/WolfHowl.wav"
-#pillar[""] = "/usr/share/scratch/Media/Sounds/"
-
-
 
 ############
 def play(audiofile):
@@ -47,25 +31,20 @@ def on_message(client, userdata, message):
     print("message qos=",message.qos)
     print("message retain flag=",message.retain)
 
-    if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
-        # everyone
-        print("everyone plays "+payload)
-        play(payload)
-    elif mqtt.topic_matches_sub("follyengine/"+mqttHost+"/rfid", message.topic):
-        item = cfg["items"][payload]
-        print(myHostname+" got "+payload+" which is: "+item)
-        try:
-            play(cfg["pillars"]["default"][item])
-        except:
-            play(cfg["pillars"]["default"]["(null)"])
-    elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
-        item = cfg["items"][payload]
-        print(myHostname+" got "+payload+" which is: "+item)
-        try:
-            play(cfg["pillars"]["default"][item])
-        except:
-            play(cfg["pillars"]["default"]["(null)"])
-
+    try:
+        if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
+            # everyone
+            print("everyone plays "+payload)
+            play(payload)
+        elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
+            item = cfg["items"][payload]
+            print(myHostname+" got "+payload+" which is: "+item)
+            try:
+                play(cfg["pillars"]["default"][item])
+            except:
+                play(cfg["pillars"]["default"]["(null)"])
+    except:
+        return
 ########################################
 
 if len(sys.argv) > 1:
