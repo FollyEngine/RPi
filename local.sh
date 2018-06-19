@@ -28,6 +28,7 @@ if [[ ¨$1¨ != ¨--setup¨ ]]; then
 	/usr/bin/nohup python rfid/main.py $CONFIGFILE > rfid.log 2>&1 &
 	/usr/bin/nohup python audio/main.py $CONFIGFILE > audio.log 2>&1 &
 	/usr/bin/nohup python controller/main.py $CONFIGFILE > controller.log 2>&1 &
+	/usr/bin/nohup sudo python neopixel/main.py $CONFIGFILE > neopixel.log 2>&1 &
 
 	echo "DONE"
 	exit
