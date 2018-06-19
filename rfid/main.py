@@ -23,10 +23,30 @@ from subprocess import call
 import paho.mqtt.publish as publish
 import json
 import socket
+import yaml
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
+
+#######
+# load config (extract to lib)
+configFile = "config.yml"
+if len(sys.argv) > 1:
+    configFile = sys.argv[1]
+
+with open(configFile, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
+
 mqttHost = "mqtt"
+if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
+    mqttHost = cfg["mqtthostname"]
+
 myHostname = socket.gethostname()
+if "hostname" in cfg and cfg["hostname"] != "":
+    myHostname = cfg["hostname"]
+
+sounddir = '/mnt/'
+testsound='test.wav'
+# end load config
 
 # a simple card observer that prints inserted/removed cards
 class PrintObserver(CardObserver):

@@ -3,12 +3,30 @@ import time
 import sys
 import socket
 import pygame
+import yaml
+
+#######
+# load config (extract to lib)
+configFile = "config.yml"
+if len(sys.argv) > 1:
+    configFile = sys.argv[1]
+
+with open(configFile, 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 mqttHost = "mqtt"
+if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
+    mqttHost = cfg["mqtthostname"]
 
-hostname = socket.gethostname()
+myHostname = socket.gethostname()
+if "hostname" in cfg and cfg["hostname"] != "":
+    myHostname = cfg["hostname"]
+
 sounddir = '/mnt/'
 testsound='test.wav'
+
+# end load config
+
 
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -50,8 +68,8 @@ def on_message(client, userdata, message):
     elif mqtt.topic_matches_sub("follyengine/all/test", message.topic):
         print("everyone plays test.wav")
         play(testsound)
-    elif mqtt.topic_matches_sub("follyengine/"+hostname+"/play", message.topic):
-        print(hostname+" plays "+payload)
+    elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/play", message.topic):
+        print(myHostname+" plays "+payload)
         play(payload)
 
 ########################################
@@ -62,17 +80,17 @@ if len(sys.argv) > 2:
     sounddir = sys.argv[2]
 
 
-client = mqtt.Client(hostname+"_audio") #create new instance
+client = mqtt.Client(myHostname+"_audio") #create new instance
 client.on_message=on_message #attach function to callback
 client.on_disconnect=on_disconnect
 
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
-client.subscribe("follyengine/"+hostname+"/play")
+client.subscribe("follyengine/"+myHostname+"/play")
 client.subscribe("follyengine/+/test")
 
-client.publish("status/"+hostname+"/audio","STARTED")
+client.publish("status/"+myHostname+"/audio","STARTED")
 
 play(testsound)
 
@@ -81,4 +99,4 @@ try:
 except KeyboardInterrupt:
     print("exit")
 
-client.publish("status/"+hostname+"/audio","STOPPED")
+client.publish("status/"+myHostname+"/audio","STOPPED")
