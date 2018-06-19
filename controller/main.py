@@ -59,6 +59,11 @@ def on_message(client, userdata, message):
                     audiofile = cfg["pillars"][myHostname][item]
 
             play(audiofile)
+            
+            # neopixels
+            if item == "sparkles":
+                client.publish("follyengine/"+myHostname+"/neopixel", item)
+
     except:
         return
 ########################################

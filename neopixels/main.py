@@ -84,7 +84,7 @@ def on_message(client, userdata, message):
         return
 ########################################
 
-client = mqtt.Client(myHostname+"_controller") #create new instance
+client = mqtt.Client(myHostname+"_neopixels") #create new instance
 client.on_message=on_message #attach function to callback
 
 print("Connecting to MQTT at: %s" % mqttHost)

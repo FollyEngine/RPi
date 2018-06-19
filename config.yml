@@ -10,11 +10,13 @@ testsound: "test.wav"
 
 mqtthostname: mqtt
 
-
+# the led's
+sparkles: "play-sparkles"
 # rfid -> object name
 items:
     "REMOVED": "removed"
     "(null)": "none"
+    "234FEBD1": "play-sparkles"
     # The RFID tags I gave to Jen
     "2A70F8A3": "Bird"
     "1A3602A4": "Dog1"
@@ -37,6 +39,7 @@ pillars:
   default:
     "removed": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
     "none": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"
+    "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"
     #
     "Bird": "/usr/share/scratch/Media/Sounds/Animal/Bird.wav"
     "Dog1": "/usr/share/scratch/Media/Sounds/Animal/Dog1.wav"
