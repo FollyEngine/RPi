@@ -5,9 +5,11 @@
 
 # set this on the usb stick for each pillar
 #hostname: yoga
-
+#sounddir: "/mnt"
+testsound: "test.wav"
 
 mqtthostname: mqtt
+
 
 # rfid -> object name
 items:

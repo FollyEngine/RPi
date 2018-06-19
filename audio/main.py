@@ -23,8 +23,11 @@ if "hostname" in cfg and cfg["hostname"] != "":
     myHostname = cfg["hostname"]
 
 sounddir = '/mnt/'
+if "sounddir" in cfg and cfg["sounddir"] != "":
+    sounddir = cfg["sounddir"]
 testsound='test.wav'
-
+if "testsound" in cfg and cfg["testsound"] != "":
+    testsound = cfg["testsound"]
 # end load config
 
 
@@ -73,12 +76,6 @@ def on_message(client, userdata, message):
         play(payload)
 
 ########################################
-
-if len(sys.argv) > 1:
-    mqttHost = sys.argv[1]
-if len(sys.argv) > 2:
-    sounddir = sys.argv[2]
-
 
 client = mqtt.Client(myHostname+"_audio") #create new instance
 client.on_message=on_message #attach function to callback
