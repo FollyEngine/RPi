@@ -61,8 +61,9 @@ def on_message(client, userdata, message):
             play(audiofile)
             
             # neopixels
-            if item == "sparkles":
-                client.publish("follyengine/"+myHostname+"/neopixel", item)
+            if "sparkles" in cfg:
+                if item == cfg["sparkles"]:
+                    client.publish("follyengine/"+myHostname+"/neopixel", item)
 
     except:
         return
