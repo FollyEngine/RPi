@@ -63,12 +63,15 @@ def on_message(client, userdata, message):
                         audiofile = cfg["podium"][myHostname][item]
 
             if "heros" in cfg:
-                if item in cfg["heros"]:
-                    if myHostname == cfg["heros"][item]:
+                print("heros: ")
+                if myHostname in cfg["heros"]:
+                    print("podium "+myHostname+" hero is '"+cfg["heros"][myHostname]+"' got '"+item+"'")
+                    if item == cfg["heros"][myHostname]:
+                        print("hero item "+item)
                         # if we're the hero item on the right podium, quiet everyone else!
                         muteAll()
                         unMute(myHostname)
-                        sleepMs(500)
+                        #sleepMs(500)
 
             play(audiofile)
             
