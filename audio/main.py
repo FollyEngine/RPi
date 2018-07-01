@@ -54,8 +54,11 @@ def play(audiofile):
     try:
         pygame.mixer.music.load(audiofile)
         pygame.mixer.music.play()
-    except:
+    except Exception as e:
         print("Failed to play %s" % audiofile)
+        print("Exception:")
+        print(e)
+
 
 ############
 def on_disconnect(client, userdata,rc=0):
@@ -64,6 +67,7 @@ def on_disconnect(client, userdata,rc=0):
 
 ############
 def on_message(client, userdata, message):
+    global isMuted
     payload=str(message.payload.decode("utf-8"))
     print(message.topic+": "+payload)
     #print("message received " ,payload)

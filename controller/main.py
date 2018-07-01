@@ -6,6 +6,8 @@ import socket
 #from subprocess import call
 import yaml
 
+allMuted = False
+
 #######
 # load config (extract to lib)
 configFile = "config.yml"
@@ -29,6 +31,10 @@ def muteAll():
    publish.single("follyengine/all/mute", "", hostname=mqttHost)
 
 ############
+def unMuteAll():
+   publish.single("follyengine/all/unmute", "", hostname=mqttHost)
+
+############
 def unMute(host):
    publish.single("follyengine/"+host+"/unmute", "", hostname=mqttHost)
 
@@ -38,6 +44,7 @@ def play(audiofile):
 
 ############
 def on_message(client, userdata, message):
+    global allMuted
     payload=str(message.payload.decode("utf-8"))
     print(message.topic+": "+payload)
 
@@ -50,6 +57,18 @@ def on_message(client, userdata, message):
         if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
             item = cfg["items"][payload]
             print(myHostname+" got "+payload+" which is: "+item)
+
+            if item == "mute":
+                print("-----------------------")
+                if allMuted:
+                    print("unMute all")
+                    unMuteAll()
+                    allMuted = False
+                else:
+                    print("Mute all")
+                    muteAll()
+                    allMuted = True
+                return
 
             audiofile = "test.wav"
             if "podium" in cfg:
@@ -70,8 +89,8 @@ def on_message(client, userdata, message):
                     if item == cfg["heros"][myHostname]:
                         print("hero item "+item)
                         # if we're the hero item on the right podium, quiet everyone else!
-                        muteAll()
-                        unMute(myHostname)
+                        #muteAll()
+                        #unMute(myHostname)
                         #sleepMs(500)
 
             play(audiofile)
@@ -81,7 +100,9 @@ def on_message(client, userdata, message):
                 if item == cfg["sparkles"]:
                     client.publish("follyengine/"+myHostname+"/neopixel", item)
 
-    except:
+    except Exception as e:
+        print("Exception:")
+        print(e)
         return
 ########################################
 
