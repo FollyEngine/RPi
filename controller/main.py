@@ -39,11 +39,12 @@ def play(audiofile):
 ############
 def on_message(client, userdata, message):
     payload=str(message.payload.decode("utf-8"))
-    print("")
-    print("message received " ,payload)
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
+    print(message.topic+": "+payload)
+
+    #print("message received " ,payload)
+    #print("message topic=",message.topic)
+    #print("message qos=",message.qos)
+    #print("message retain flag=",message.retain)
 
     try:
         if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):

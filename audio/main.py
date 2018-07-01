@@ -35,11 +35,12 @@ pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
 
-mute = False
+isMuted = False
 
 ############
 def play(audiofile):
-    if mute:
+    if isMuted:
+        print(myHostname+" is muted, not playing "+audiofile)
         return
     # if we're already playing something then ignore new play command
     if pygame.mixer.music.get_busy():
@@ -64,29 +65,31 @@ def on_disconnect(client, userdata,rc=0):
 ############
 def on_message(client, userdata, message):
     payload=str(message.payload.decode("utf-8"))
-    print("")
-    print("message received " ,payload)
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
-    if mqtt.topic_matches_sub("follyengine/all/play", message.topic):
+    print(message.topic+": "+payload)
+    #print("message received " ,payload)
+    #print("message topic=",message.topic)
+    #print("message qos=",message.qos)
+    #print("message retain flag=",message.retain)
+    if mqtt.topic_matches_sub("follyengine/all/play", message.topic) and payload != "":
         # everyone
         print("everyone plays "+payload)
         play(payload)
     elif mqtt.topic_matches_sub("follyengine/all/test", message.topic):
         print("everyone plays test.wav")
         play(testsound)
-    elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/play", message.topic):
+    elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/play", message.topic) and payload != "":
         print(myHostname+" plays "+payload)
         play(payload)
     elif mqtt.topic_matches_sub("follyengine/all/mute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/mute", message.topic):
+        isMuted = True
+        print("muted")
         # podiums stop making sounds
-        pygame.mixer.fadeout()
+        pygame.mixer.fadeout(100)
         # TODO: add an exception for the hero podium...
-        mute = True
     elif mqtt.topic_matches_sub("follyengine/all/unmute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/unmute", message.topic):
         # podiums can make sounds
-        mute = False
+        isMuted = False
+        print("unmuted")
 
 ########################################
 
@@ -99,6 +102,7 @@ client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+myHostname+"/play")
 client.subscribe("follyengine/+/test")
+client.subscribe("follyengine/all/+")
 
 client.publish("status/"+myHostname+"/audio","STARTED")
 

@@ -78,8 +78,8 @@ heros:
 podium:
   # default for all podium
   default:
-    "removed": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
-    "none": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"
+    "removed": "" #/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
+    "none": "" #/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"
     "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"
     #
 
