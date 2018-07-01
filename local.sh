@@ -1,6 +1,7 @@
 #!/bin/bash -ex
 
 CONFIGFILE="$(pwd)/config.yml"
+DATE=$(date +%Y-%m-%d-%H.%M)
 
 # do we have a cfg sdcard?
 if sudo fdisk -l | grep sda1 | grep FAT32; then
@@ -25,10 +26,10 @@ if [[ ¨$1¨ != ¨--setup¨ ]]; then
 	sleep 10
 	ping -c 1 $MQTTHOST
 
-	/usr/bin/nohup python rfid/main.py $CONFIGFILE > rfid.log 2>&1 &
-	/usr/bin/nohup python audio/main.py $CONFIGFILE > audio.log 2>&1 &
-	/usr/bin/nohup python controller/main.py $CONFIGFILE > controller.log 2>&1 &
-	/usr/bin/nohup sudo python neopixels/main.py $CONFIGFILE > neopixel.log 2>&1 &
+	/usr/bin/nohup python rfid/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
+	/usr/bin/nohup python audio/main.py $CONFIGFILE > audio-${DATE}.log 2>&1 &
+	/usr/bin/nohup python controller/main.py $CONFIGFILE > controller-${DATE}.log 2>&1 &
+	/usr/bin/nohup sudo python neopixels/main.py $CONFIGFILE > neopixel-${DATE}.log 2>&1 &
 
 	echo "DONE"
 	exit
