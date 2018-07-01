@@ -35,8 +35,13 @@ pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
 
+mute = False
+
 ############
 def play(audiofile):
+    if mute:
+        return
+    # if we're already playing something then ignore new play command
     if pygame.mixer.music.get_busy():
         return
 
@@ -74,6 +79,14 @@ def on_message(client, userdata, message):
     elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/play", message.topic):
         print(myHostname+" plays "+payload)
         play(payload)
+    elif mqtt.topic_matches_sub("follyengine/all/mute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/mute", message.topic):
+        # podiums stop making sounds
+        pygame.mixer.fadeout()
+        # TODO: add an exception for the hero podium...
+        mute = True
+    elif mqtt.topic_matches_sub("follyengine/all/unmute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/unmute", message.topic):
+        # podiums can make sounds
+        mute = False
 
 ########################################
 

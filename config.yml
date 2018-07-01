@@ -3,7 +3,7 @@
 #make a neopixel sparkle
 
 
-# set this on the usb stick for each pillar
+# set this on the usb stick for each podium
 #hostname: yoga
 #sounddir: "/mnt"
 testsound: "test.wav"
@@ -32,10 +32,10 @@ items:
     "7A9CD89F": "PartyNoise"
 
 
-# pillar ->
+# podium ->
 #      object name -> sound file path
-pillars:
-  # default for all pillars
+podium:
+  # default for all podium
   default:
     "removed": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox1.wav"
     "none": "/usr/share/scratch/Media/Sounds/Vocals/BeatBox2.wav"

@@ -24,6 +24,13 @@ if "hostname" in cfg and cfg["hostname"] != "":
     myHostname = cfg["hostname"]
 # end load config
 
+############
+def muteAll():
+   publish.single("follyengine/all/mute", "", hostname=mqttHost)
+
+############
+def unMute(host):
+   publish.single("follyengine/"+host+"/unmute", "", hostname=mqttHost)
 
 ############
 def play(audiofile):
@@ -39,24 +46,29 @@ def on_message(client, userdata, message):
     print("message retain flag=",message.retain)
 
     try:
-        if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
-            # everyone
-            print("everyone plays "+payload)
-            play(payload)
-        elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
+        if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
             item = cfg["items"][payload]
             print(myHostname+" got "+payload+" which is: "+item)
 
             audiofile = "test.wav"
-            if "default" in cfg["pillars"]:
-                if "(null)" in cfg["pillars"]["default"]:
-                    audiofile = cfg["pillars"]["default"]["(null)"]
-            if "default" in cfg["pillars"]:
-                if item in cfg["pillars"]["default"]:
-                    audiofile = cfg["pillars"]["default"][item]
-            if myHostname in cfg["pillars"]:
-                if item in cfg["pillars"][myHostname]:
-                    audiofile = cfg["pillars"][myHostname][item]
+            if "podium" in cfg:
+                if "default" in cfg["podium"]:
+                    if "(null)" in cfg["podium"]["default"]:
+                        audiofile = cfg["podium"]["default"]["(null)"]
+                if "default" in cfg["podium"]:
+                    if item in cfg["podium"]["default"]:
+                        audiofile = cfg["podium"]["default"][item]
+                if myHostname in cfg["podium"]:
+                    if item in cfg["podium"][myHostname]:
+                        audiofile = cfg["podium"][myHostname][item]
+
+            if "heros" in cfg:
+                if item in cfg["heros"]:
+                    if myHostname == cfg["heros"][item]:
+                        # if we're the hero item on the right podium, quiet everyone else!
+                        muteAll()
+                        unMute(myHostname)
+                        sleepMs(500)
 
             play(audiofile)
             
