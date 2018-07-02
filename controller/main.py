@@ -7,6 +7,7 @@ import socket
 import yaml
 
 allMuted = False
+repeats["sven"] = 1
 
 #######
 # load config (extract to lib)
@@ -56,6 +57,8 @@ def state(nextState):
 def on_message(client, userdata, message):
     global allMuted
     global currentState
+    global repeats
+
     payload=str(message.payload.decode("utf-8"))
     print(message.topic+": "+payload)
 
@@ -98,6 +101,17 @@ def on_message(client, userdata, message):
                         #muteAll()
                         #unMute(myHostname)
                         #sleepMs(500)
+
+            if item in repeats:
+                if repeats[item] == 1:
+                    item = "No_A"
+                elif repeats[item] == 1:
+                    item = "No_B"
+                else:
+                    item = "No_C"
+                repeats[item] = 1 + repeats[item]
+            else
+                repeats[item] = 1
 
             audiofile = ""
             if "podium" in cfg:
