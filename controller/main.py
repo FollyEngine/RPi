@@ -24,6 +24,11 @@ if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
 myHostname = socket.gethostname()
 if "hostname" in cfg and cfg["hostname"] != "":
     myHostname = cfg["hostname"]
+
+currentState = "PodiumX"
+if "start_state" in cfg and cfg["start_state"] != "":
+    currentState = cfg["start_state"]
+
 # end load config
 
 ############
@@ -45,6 +50,7 @@ def play(audiofile):
 ############
 def on_message(client, userdata, message):
     global allMuted
+    global currentState
     payload=str(message.payload.decode("utf-8"))
     print(message.topic+": "+payload)
 
@@ -70,6 +76,20 @@ def on_message(client, userdata, message):
                     allMuted = True
                 return
 
+            if "heros" in cfg:
+                print("heros: ")
+                if currentState == myHostname and myHostname in cfg["heros"]:
+                    heroItem = cfg["heros"][myHostname]["item"]
+                    print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
+                    if item == heroItem:
+                        print("got hero item "+item+" playing its hero speach")
+                        item = "hero"
+                        currentState = cfg["heros"][myHostname]["next"]
+                        # if we're the hero item on the right podium, quiet everyone else!
+                        #muteAll()
+                        #unMute(myHostname)
+                        #sleepMs(500)
+
             audiofile = "test.wav"
             if "podium" in cfg:
                 if "default" in cfg["podium"]:
@@ -82,16 +102,6 @@ def on_message(client, userdata, message):
                     if item in cfg["podium"][myHostname]:
                         audiofile = cfg["podium"][myHostname][item]
 
-            if "heros" in cfg:
-                print("heros: ")
-                if myHostname in cfg["heros"]:
-                    print("podium "+myHostname+" hero is '"+cfg["heros"][myHostname]+"' got '"+item+"'")
-                    if item == cfg["heros"][myHostname]:
-                        print("hero item "+item)
-                        # if we're the hero item on the right podium, quiet everyone else!
-                        #muteAll()
-                        #unMute(myHostname)
-                        #sleepMs(500)
 
             play(audiofile)
             
