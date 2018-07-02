@@ -7,7 +7,7 @@ import socket
 import yaml
 
 allMuted = False
-repeats["sven"] = 1
+repeats = {}
 
 #######
 # load config (extract to lib)
@@ -34,23 +34,35 @@ if "start_state" in cfg and cfg["start_state"] != "":
 
 ############
 def muteAll():
-   publish.single("follyengine/all/mute", "", hostname=mqttHost)
+    publish.single("follyengine/all/mute", "", hostname=mqttHost)
 
 ############
 def unMuteAll():
-   publish.single("follyengine/all/unmute", "", hostname=mqttHost)
+    publish.single("follyengine/all/unmute", "", hostname=mqttHost)
 
 ############
 def unMute(host):
-   publish.single("follyengine/"+host+"/unmute", "", hostname=mqttHost)
+    publish.single("follyengine/"+host+"/unmute", "", hostname=mqttHost)
 
 ############
-def play(audiofile):
-   publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
+def play(item):
+    audiofile = ""
+    if "podium" in cfg:
+        if "default" in cfg["podium"]:
+            if "(null)" in cfg["podium"]["default"]:
+                audiofile = cfg["podium"]["default"]["(null)"]
+        if "default" in cfg["podium"]:
+            if item in cfg["podium"]["default"]:
+                audiofile = cfg["podium"]["default"][item]
+        if myHostname in cfg["podium"]:
+            if item in cfg["podium"][myHostname]:
+                audiofile = cfg["podium"][myHostname][item]
+
+    publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
 
 ############
 def state(nextState):
-   publish.single("follyengine/all/state", nextState, hostname=mqttHost)
+    publish.single("follyengine/all/state", nextState, hostname=mqttHost)
 
 
 ############
@@ -68,6 +80,9 @@ def on_message(client, userdata, message):
     #print("message retain flag=",message.retain)
     if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
         currentState = payload
+
+        if currentState == "FutureText":
+            play("future")
         return
 
     try:
@@ -110,23 +125,10 @@ def on_message(client, userdata, message):
                 else:
                     item = "No_C"
                 repeats[item] = 1 + repeats[item]
-            else
+            else:
                 repeats[item] = 1
 
-            audiofile = ""
-            if "podium" in cfg:
-                if "default" in cfg["podium"]:
-                    if "(null)" in cfg["podium"]["default"]:
-                        audiofile = cfg["podium"]["default"]["(null)"]
-                if "default" in cfg["podium"]:
-                    if item in cfg["podium"]["default"]:
-                        audiofile = cfg["podium"]["default"][item]
-                if myHostname in cfg["podium"]:
-                    if item in cfg["podium"][myHostname]:
-                        audiofile = cfg["podium"][myHostname][item]
-
-
-            play(audiofile)
+            play(item)
             
             # neopixels
             if "sparkles" in cfg:
