@@ -103,8 +103,9 @@ def on_message(client, userdata, message):
                 return
 
             if "heros" in cfg:
-                print("heros: ")
+                print("hero for: "+currentState)
                 if currentState == myHostname and myHostname in cfg["heros"]:
+                    print("currentState: "+cfg["heros"][myHostname])
                     heroItem = cfg["heros"][myHostname]["item"]
                     print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
                     if item == heroItem:
