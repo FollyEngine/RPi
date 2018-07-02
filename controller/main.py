@@ -30,6 +30,7 @@ currentState = "PodiumX"
 if "start_state" in cfg and cfg["start_state"] != "":
     currentState = cfg["start_state"]
 
+print(cfg["heros"][currentState])
 # end load config
 
 ############
@@ -72,6 +73,9 @@ def on_message(client, userdata, message):
     global repeats
 
     payload=str(message.payload.decode("utf-8"))
+    if payload == "" or payload == "REMOVED" or payload == "(null)":
+        return
+
     print(message.topic+": "+payload)
 
     #print("message received " ,payload)
@@ -104,8 +108,9 @@ def on_message(client, userdata, message):
 
             if "heros" in cfg:
                 print("hero for: "+currentState)
+
                 if currentState == myHostname and myHostname in cfg["heros"]:
-                    print("currentState: "+cfg["heros"][myHostname])
+                    print(cfg["heros"][currentState])
                     heroItem = cfg["heros"][myHostname]["item"]
                     print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
                     if item == heroItem:
@@ -119,15 +124,15 @@ def on_message(client, userdata, message):
                         #sleepMs(500)
 
             if item in repeats:
+                repeats[item] = 1 + repeats[item]
                 if repeats[item] == 1:
                     item = "No_A"
-                elif repeats[item] == 1:
+                elif repeats[item] == 2:
                     item = "No_B"
                 else:
                     item = "No_C"
-                repeats[item] = 1 + repeats[item]
             else:
-                repeats[item] = 1
+                repeats[item] = 0
 
             play(item)
             
