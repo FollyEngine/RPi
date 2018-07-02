@@ -48,6 +48,11 @@ def play(audiofile):
    publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
 
 ############
+def state(nextState):
+   publish.single("follyengine/all/state", nextState, hostname=mqttHost)
+
+
+############
 def on_message(client, userdata, message):
     global allMuted
     global currentState
@@ -58,6 +63,9 @@ def on_message(client, userdata, message):
     #print("message topic=",message.topic)
     #print("message qos=",message.qos)
     #print("message retain flag=",message.retain)
+    if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
+        currentState = payload
+        return
 
     try:
         if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
@@ -85,12 +93,13 @@ def on_message(client, userdata, message):
                         print("got hero item "+item+" playing its hero speach")
                         item = "hero"
                         currentState = cfg["heros"][myHostname]["next"]
+                        state(currentState)
                         # if we're the hero item on the right podium, quiet everyone else!
                         #muteAll()
                         #unMute(myHostname)
                         #sleepMs(500)
 
-            audiofile = "test.wav"
+            audiofile = ""
             if "podium" in cfg:
                 if "default" in cfg["podium"]:
                     if "(null)" in cfg["podium"]["default"]:
@@ -123,6 +132,7 @@ print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+myHostname+"/rfid")
+client.subscribe("follyengine/all/state")
 
 client.publish("status/"+myHostname+"/controller","STARTED")
 publish.single("follyengine/"+myHostname+"/test", "test", hostname=mqttHost)
