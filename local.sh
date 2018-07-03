@@ -37,12 +37,12 @@ fi
 
 # otherwise, setup..
 
-git pull
-	
 # get pyscard
 sudo apt-get update
 sudo apt-get upgrade -yq
 sudo apt-get install -yq python-pyscard python-pip pcscd git python-setuptools libpcsclite-dev python-dev mosquitto-clients mosquitto scratch python-pygame
+
+git pull
 
 cd rfid
 sudo pip install --no-cache-dir -r requirements.txt
@@ -51,3 +51,11 @@ sudo pip install --no-cache-dir -r requirements.txt
 cd ../controller
 sudo pip install --no-cache-dir -r requirements.txt
 cd ..
+
+cat /proc/device-tree/model
+if grep "Raspberry Pi" /proc/device-tree/model; then
+	if ! lsmod | grep hifiberry; then
+		echo "installing drivers for pHAT"
+		curl https://get.pimoroni.com/phatdac | bash
+	fi
+fi
