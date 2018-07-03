@@ -23,7 +23,7 @@ echo "this host called $HOSTNAME"
 
 # 
 if [[ ¨$1¨ != ¨--setup¨ ]]; then
-	sleep 10
+	sleep 15
 	ping -c 1 $MQTTHOST
 
 	python rfid/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
