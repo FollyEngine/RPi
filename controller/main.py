@@ -82,7 +82,8 @@ def on_message(client, userdata, message):
     #print("message topic=",message.topic)
     #print("message qos=",message.qos)
     #print("message retain flag=",message.retain)
-    if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic):
+    if mqtt.topic_matches_sub("follyengine/all/state", message.topic):
+        print("Changing state from "+currentState+" to "+payload)
         currentState = payload
 
         if currentState == "FutureText":
