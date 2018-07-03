@@ -107,21 +107,26 @@ def on_message(client, userdata, message):
                 return
 
             if "heros" in cfg:
-                print("hero for: "+currentState)
+                print("hero for: "+myHostname)
 
-                if currentState == myHostname and myHostname in cfg["heros"]:
-                    print(cfg["heros"][currentState])
+                if myHostname in cfg["heros"]:
+                    print(cfg["heros"][myHostname])
                     heroItem = cfg["heros"][myHostname]["item"]
                     print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
                     if item == heroItem:
-                        print("got hero item "+item+" playing its hero speach")
-                        item = "hero"
-                        currentState = cfg["heros"][myHostname]["next"]
-                        state(currentState)
-                        # if we're the hero item on the right podium, quiet everyone else!
-                        #muteAll()
-                        #unMute(myHostname)
-                        #sleepMs(500)
+                        # this podium's hero item was placed
+                        if currentState == myHostname:
+                            # its this podium's turn to succeed!
+                            print("got hero item "+item+" playing its hero speech")
+                            # tell everyone to go to the next podium
+                            state(cfg["heros"][myHostname]["next"])
+                            # if we're the hero item on the right podium, quiet everyone else!
+                            #muteAll()
+                            #unMute(myHostname)
+                            #sleepMs(500)
+                        else:
+                            # its not this podium's turn, so we read the non-hero text
+                            item = "hero_no"
 
             if item in repeats:
                 repeats[item] = 1 + repeats[item]
