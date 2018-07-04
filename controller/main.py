@@ -83,6 +83,10 @@ def on_message(client, userdata, message):
     #print("message qos=",message.qos)
     #print("message retain flag=",message.retain)
     if mqtt.topic_matches_sub("follyengine/all/state", message.topic):
+        if payload == "reset":
+            currentState = cfg["start_state"]
+            repeats = {}
+            return
         print("Changing state from "+currentState+" to "+payload)
         currentState = payload
 
@@ -95,7 +99,10 @@ def on_message(client, userdata, message):
             item = cfg["items"][payload]
             print(myHostname+" got "+payload+" which is: "+item)
 
-            if item == "mute":
+            if item == "reset":
+                state("reset")
+                return
+            elif item == "mute":
                 print("-----------------------")
                 if allMuted:
                     print("unMute all")
@@ -114,7 +121,11 @@ def on_message(client, userdata, message):
                     print(cfg["heros"][myHostname])
                     heroItem = cfg["heros"][myHostname]["item"]
                     print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
-                    if item == heroItem:
+                    if item == "playhero":
+                        #play the hero speech without changing the state
+                        item = heroItem
+                        print("forcing hero item "+item+" playing its hero speech")
+                    elif item == heroItem:
                         # this podium's hero item was placed
                         if currentState == myHostname:
                             # its this podium's turn to succeed!
