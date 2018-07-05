@@ -30,6 +30,7 @@ items:
     "7ADF03A4": "envelope"
     "9A5AB69F": "tobacco"
 
+    "3AABFDA3": "letter"
     
     "FA1C07A4": "salty"
     "EA1A03A4": "sour"
@@ -105,7 +106,8 @@ podium:
     "removed": ""
     "none": ""
     "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"
-    "twinkle": "HeroTwinkle/twinkle.wav"
+    "twinkle": "HeroTwinkle/short-twinkle.wav"
+    "letter": "HeroTwinkle/short-twinkle.wav"
     #
 
     # in original dir
