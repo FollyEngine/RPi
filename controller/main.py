@@ -131,7 +131,13 @@ def on_message(client, userdata, message):
                         #play the hero speech without changing the state
                         item = heroItem
                         print("forcing hero item "+item+" playing its hero speech")
-                        play(item)
+                        if currentState == myHostname:
+                            # if this podium is the currentstate, advance the state too
+                            play("hero")
+                        else:
+                            #otherwise, play the non-twinkly hero
+                            play(item)
+
                         return
                     elif item == heroItem:
                         # this podium's hero item was placed
