@@ -131,6 +131,8 @@ def on_message(client, userdata, message):
                         #play the hero speech without changing the state
                         item = heroItem
                         print("forcing hero item "+item+" playing its hero speech")
+                        play(item)
+                        return
                     elif item == heroItem:
                         # this podium's hero item was placed
                         if currentState == myHostname:

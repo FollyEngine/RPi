@@ -18,9 +18,9 @@ items:
 
 
     "04CF364A853280": "mute"
-    "": "reset"
-    "": "playhero"
-    "": "twinkle"
+    "AA4F00A4": "reset"
+    "8A14F7A3": "playhero"
+    "9A47F6A3": "twinkle"
 
     # Props master list
     "FACEFAA3": "pot"
