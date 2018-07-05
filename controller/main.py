@@ -43,7 +43,7 @@ def unMuteAll():
 
 ############
 def unMute(host):
-    publish.single("follyengine/"+host+"/unmute", "", hostname=mqttHost)
+    publish.single("follyengine/"+host+"/unmute", host, hostname=mqttHost)
 
 ############
 def play(item):
@@ -85,15 +85,21 @@ def on_message(client, userdata, message):
     if mqtt.topic_matches_sub("follyengine/all/state", message.topic):
         if payload == "reset":
             currentState = cfg["start_state"]
-            repeats = {}
+            repeats.clear()
             return
         print("Changing state from "+currentState+" to "+payload)
         currentState = payload
 
         if currentState == "FutureText":
             play("future")
+        elif currentState == "ButNotForUs":
+            play("butnotforus")
         return
-
+    if mqtt.topic_matches_sub("status/"+myHostname+"/played", message.topic):
+        if payload == cfg["podium"][myHostname]["hero"]:
+            unMuteAll()
+            state(cfg["heros"][myHostname]["next"])
+        return
     try:
         if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
             item = cfg["items"][payload]
@@ -131,11 +137,13 @@ def on_message(client, userdata, message):
                             # its this podium's turn to succeed!
                             print("got hero item "+item+" playing its hero speech")
                             # tell everyone to go to the next podium
-                            state(cfg["heros"][myHostname]["next"])
                             # if we're the hero item on the right podium, quiet everyone else!
-                            #muteAll()
-                            #unMute(myHostname)
+                            muteAll()
+                            unMute(myHostname)
                             #sleepMs(500)
+                            play("hero")
+                            # the "finished playing signal" from audio will trigger the unmute and state transition
+                            return
                         else:
                             # its not this podium's turn, so we read the non-hero text
                             item = "hero_no"
@@ -171,10 +179,13 @@ print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+myHostname+"/rfid")
+client.subscribe("status/"+myHostname+"/played")  # used for hero mute and state
+
 client.subscribe("follyengine/all/state")
 
 client.publish("status/"+myHostname+"/controller","STARTED")
 publish.single("follyengine/"+myHostname+"/test", "test", hostname=mqttHost)
+state(cfg["start_state"])
 
 try:
     client.loop_forever()

@@ -46,16 +46,20 @@ def play(audiofile):
     if pygame.mixer.music.get_busy():
         return
 
-    if not audiofile.startswith('/'):
-        audiofile = sounddir + audiofile
+    audioPath = audiofile
+    if not audioPath.startswith('/'):
+        audioPath = sounddir + audioPath
 
     # TODO: if its a URL, download it (unless we already have it)
 
     try:
-        pygame.mixer.music.load(audiofile)
+        pygame.mixer.music.load(audioPath)
         pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+        client.publish("status/"+myHostname+"/played",audiofile)
     except Exception as e:
-        print("Failed to play %s" % audiofile)
+        print("Failed to play %s" % audioPath)
         print("Exception:")
         print(e)
 
@@ -105,6 +109,7 @@ print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
 client.subscribe("follyengine/"+myHostname+"/play")
+client.subscribe("follyengine/"+myHostname+"/unmute")
 client.subscribe("follyengine/+/test")
 client.subscribe("follyengine/all/+")
 
