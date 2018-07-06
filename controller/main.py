@@ -95,6 +95,8 @@ def on_message(client, userdata, message):
             play("future")
         elif currentState == "ButNotForUs":
             play("butnotforus")
+        else:
+            play("twinkle")
         return
     if mqtt.topic_matches_sub("status/"+myHostname+"/played", message.topic):
         if payload == cfg["podium"][myHostname]["hero"]:
