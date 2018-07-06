@@ -166,6 +166,8 @@ def on_message(client, userdata, message):
 
             if item in repeats:
                 repeats[item] = 1 + repeats[item]
+                client.publish("repeat/"+myHostname+"/"+item, repeats[item])
+
                 if repeats[item] == 1:
                     item = "No_A"
                 elif repeats[item] == 2:
