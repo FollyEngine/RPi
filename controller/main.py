@@ -86,7 +86,7 @@ def on_message(client, userdata, message):
         if payload == "reset":
             currentState = cfg["start_state"]
             repeats.clear()
-            play("twinkle")
+            play("reset")
             return
         print("Changing state from "+currentState+" to "+payload)
         currentState = payload
@@ -96,7 +96,7 @@ def on_message(client, userdata, message):
         elif currentState == "ButNotForUs":
             play("butnotforus")
         else:
-            play("twinkle")
+            play("next_state")
         return
     if mqtt.topic_matches_sub("status/"+myHostname+"/played", message.topic):
         if payload == cfg["podium"][myHostname]["hero"]:
