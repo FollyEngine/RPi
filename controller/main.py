@@ -86,6 +86,7 @@ def on_message(client, userdata, message):
         if payload == "reset":
             currentState = cfg["start_state"]
             repeats.clear()
+            play("twinkle")
             return
         print("Changing state from "+currentState+" to "+payload)
         currentState = payload
