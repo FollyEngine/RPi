@@ -5,7 +5,7 @@ cd ../convictshope
 git pull
 
 if [[ -e "/mnt/podium.name" ]]; then
-	sudo rsync * /mnt/
+	sudo rsync -rv * /mnt/
 
 	PODIUM=$(cat /mnt/podium.name | sed 's/^hostname: //g')
 
