@@ -1,6 +1,7 @@
 
 # set this on the usb stick for each pillar
-hostname: Podium4
+hostname: Podium5
+start_state: Podium5
 sounddir: "/home/sven/src/follyengine/convictshope/"
 testsound: "/usr/share/scratch/Media/Sounds/Effects/Bubbles.wav"
 
@@ -18,27 +19,34 @@ items:
 
 
     "04CF364A853280": "mute"
+
     "AA4F00A4": "reset"
-    "8A14F7A3": "playhero"
+    "DA29FAA3": "reset"
+
+    "8A14F7A3": "playhero"   # 1
+    "6AC9FBA3": "playhero"   #2
+    "550A5CBC": "sven"  # sven's keyfob
+
     "9A47F6A3": "twinkle"
 
     # Props master list
     "FACEFAA3": "pot"
-    "DA38F6A3": "key"
+    "3A06C79F": "key"
     "FAB2F8A3": "bandages"
     "6AC5F5A3": "handkerchief"
-    "7ADF03A4": "envelope"
+    "CAC800A4": "envelope"
     "9A5AB69F": "tobacco"
 
     "3AABFDA3": "letter"
-    
+
     "FA1C07A4": "salty"
-    "EA1A03A4": "sour"
+    "8A3DF8A3": "sour"
+    "EA1A03A4": "magnifying"
     "DAA0F9A3": "sweet"
     "0A61F9A3": "lock"
     "5A05FFA3": "dustpan"
     "0A3301A4": "handle"
-    "6AD101A4": "teapot"
+    "DA04C99F": "teapot"
     "1A95F7A3": "dish"
     "7A46FFA3": "jar"
     "7A31CE9F": "mirror"
@@ -46,12 +54,13 @@ items:
     "5A91C69F": "perfume"
     "CAC702A4": "watering"
     "8AE7CD9F": "stick"
-    "AA8900A4": "swandish"
-    "8A3DF8A3": "magnifying"
-    "AA9F03A4": "wand"
+    "DA41F6A3": "swandish"
+    "4AB201A4": "wand1"
+    "9A5DDA9F": "wand2"
+    "EAA9FDA3": "wand3"
     ##
     "FAE4F9A3": "kettle"
-    "FA7D03A4": "fork"
+    "AA0A06A4": "fork"
     "FAB6F9A3": "iron"
     "5AA9F4A3": "kerosene"
     "AAAE05A4": "medical"
@@ -74,7 +83,7 @@ items:
 
 # The order of completion is 5 - 1 - 6 - 2 - 3 - 4."
 # hero item to its matching podium
-start_state: "Podium4"
+
 heros:
   "Podium1":
     "item": "envelope"
@@ -94,9 +103,9 @@ heros:
   "Podium6":
     "item": "pot"
     next: Podium2
-  "FutureText":
-    "item": "none"
-    next: ButNotForUs
+#  "FutureText":
+#    "item": "none"
+#    next: ButNotForUs
 
 # podium ->
 #      object name -> sound file path
@@ -107,7 +116,15 @@ podium:
     "none": ""
     "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"
     "twinkle": "HeroTwinkle/short-twinkle.wav"
-    "letter": "HeroTwinkle/short-twinkle.wav"
+
+    "sven": "/usr/share/scratch/Media/Sounds/Electronic/ComputerBeeps2.wav"
+
+    "reset": "HeroTwinkle/short-twinkle.wav"
+    "next_state": "HeroTwinkle/short-twinkle.wav"
+
+    "longtwinkleletter": "HeroTwinkle/short-twinkle.wav"
+    "letter": "HeroSparkle/letter_sparkle.wav"
+
     #
 
     # in original dir
@@ -132,7 +149,9 @@ podium:
     "chains": "Podium1/1chains.wav"
     "handkerchief": "Podium1/1handkerchief.wav"
     "pot": "Podium1/1pot.wav"
-    "wand": "Podium1/1wand.wav"
+    "wand1": "Podium1/1wand.wav"
+    "wand2": "Podium1/1wand.wav"
+    "wand3": "Podium1/1wand.wav"
     "swandish": "Podium1/1swandish.wav"
     "dish": "Podium1/1dish.wav"
     "jar": "Podium1/1jar.wav"
@@ -155,7 +174,9 @@ podium:
 
     "future": "FutureText/1future.wav"
     "envelope_no": "HeroItemsNo/1envelope_no.wav"
-    "hero": "HeroTwinkle/1envelope_hero_twinkle.wav"
+    "longtwinklehero": "HeroTwinkle/1envelope_hero_twinkle.wav"
+    "hero": "HeroSparkle/1envelope_hero_sparkle.wav"
+
     "hero_no": "HeroItemsNo/1envelope_no.wav"
   Podium2:
     "Yes": "Podium2/2Yes.wav"
@@ -181,7 +202,9 @@ podium:
     "handkerchief": "Podium2/2handkerchief.wav"
     "dustpan": "Podium2/2dustpan.wav"
     "handle": "Podium2/2handle.wav"
-    "wand": "Podium2/2wand.wav"
+    "wand1": "Podium2/2wand.wav"
+    "wand2": "Podium2/2wand.wav"
+    "wand3": "Podium2/2wand.wav"
     "pot": "Podium2/2pot.wav"
     "dish": "Podium2/2dish.wav"
     "No_B": "Podium2/2No_B.wav"
@@ -198,8 +221,11 @@ podium:
 
     "future": "FutureText/2future.wav"
     "key_no": "HeroItemsNo/2key_no.wav"
-    "hero": "HeroTwinkle/2key_hero_twinkle.wav"
     "hero_no": "HeroItemsNo/2key_no.wav"
+
+    "longtwinklehero": "HeroTwinkle/2key_hero_twinkle.wav" #not used anymore
+    "hero": "HeroSparkle/2key_hero_sparkle.wav"
+
   Podium3:
     "handkerchief": "Podium3/3handkerchief.wav"
     "dish": "Podium3/3dish.wav"
@@ -209,7 +235,9 @@ podium:
     "handle": "Podium3/3handle.wav"
     "mirror": "Podium3/3mirror.wav"
     "bandages": "Podium3/3bandages.wav"
-    "wand": "Podium3/3wand.wav"
+    "wand1": "Podium3/3wand.wav"
+    "wand2": "Podium3/3wand.wav"
+    "wand3": "Podium3/3wand.wav"
     "Interesting_A": "Podium3/3Interesting_A.wav"
     "Yes": "Podium3/3Yes.wav"
     "teapot": "Podium3/3teapot.wav"
@@ -241,7 +269,9 @@ podium:
 
     "future": "FutureText/3future.wav"
     "bandages_no": "HeroItemsNo/3bandages_no.wav"
-    "hero": "HeroTwinkle/3bandages_hero_twinkle.wav"
+    "longtwinklehero": "HeroTwinkle/3bandages_hero_twinkle.wav"
+    "hero": "HeroSparkle/3bandages_hero_sparkle.wav"
+
     "hero_no": "HeroItemsNo/3bandages_no.wav"
   Podium4:
     "dustpan": "Podium4/4dustpan.wav"
@@ -253,7 +283,9 @@ podium:
     "iron": "Podium4/4iron.wav"
     "handle": "Podium4/4handle.wav"
     "tobacco": "Podium4/4tobacco.wav"
-    "wand": "Podium4/4wand.wav"
+    "wand1": "Podium4/4wand.wav"
+    "wand2": "Podium4/4wand.wav"
+    "wand3": "Podium4/4wand.wav"
     "No_B": "Podium4/4No_B.wav"
     "key": "Podium4/4key.wav"
     "dish": "Podium4/4dish.wav"
@@ -284,7 +316,8 @@ podium:
 
     "future": "FutureText/4future.wav"
     "tobacco_no": "HeroItemsNo/4tobacco_no.wav"
-    "hero": "HeroTwinkle/4tobacco_hero_twinkle.wav"
+    "longherohero": "HeroTwinkle/4tobacco_hero_twinkle.wav"
+    "hero": "HeroSparkle/4tobacco_hero_sparkle.wav"
     "hero_no": "HeroItemsNo/4tobacco_no.wav"
   Podium5:
     "salty": "Podium5/5salty.wav"
@@ -300,7 +333,9 @@ podium:
     "iron": "Podium5/5iron.wav"
     "sweet": "Podium5/5sweet.wav"
     "No_C": "Podium5/5No_C.wav"
-    "wand": "Podium5/5wand.wav"
+    "wand1": "Podium5/5wand.wav"
+    "wand2": "Podium5/5wand.wav"
+    "wand3": "Podium5/5wand.wav"
     "sour": "Podium5/5sour.wav"
     "dustpan": "Podium5/5dustpan.wav"
     "No_A": "Podium5/5No_A.wav"
@@ -325,7 +360,9 @@ podium:
 
     "future": "FutureText/5future.wav"
     "handkerchief_no": "HeroItemsNo/5handkerchief_no.wav"
-    "hero": "HeroTwinkle/5handkerchief_hero_twinkle.wav"
+    "longtwinklehero": "HeroTwinkle/5handkerchief_hero_twinkle.wav"
+    "hero": "HeroSparkle/5handkerchief_hero_sparkle.wav"
+
     "hero_no": "HeroItemsNo/5handkerchief_no.wav"
   Podium6:
     "dustpan": "Podium6/6dustpan.wav"
@@ -357,7 +394,9 @@ podium:
     "key": "Podium6/6key.wav"
     "Interesting_B": "Podium6/6Interesting_B.wav"
     "teapot": "Podium6/6teapot.wav"
-    "wand": "Podium6/6wand.wav"
+    "wand1": "Podium6/6wand.wav"
+    "wand2": "Podium6/6wand.wav"
+    "wand3": "Podium6/6wand.wav"
     "tobacco": "Podium6/6tobacco.wav"
     "chains": "Podium6/6chains.wav"
     "jar": "Podium6/6jar.wav"
@@ -368,6 +407,33 @@ podium:
 
     "future": "FutureText/6future.wav"
     "pot_no": "HeroItemsNo/6pot_no.wav"
-    "hero": "HeroTwinkle/6pot_hero_twinkle.wav"
+    "longtwinklehero": "HeroTwinkle/6pot_hero_twinkle.wav"
+    "hero": "HeroSparkle/6pot_hero_sparkle.wav"
     "hero_no": "HeroItemsNo/6pot_no.wav"
 
+
+# TODO: not not sure how I'll implement this
+    "Jealous_A": "Jealous/1Jealous_A.wav"
+    "Jealous_D": "Jealous/4Jealous_D.wav"
+    "Jealous_C": "Jealous/5Jealous_C.wav"
+    "Jealous_C": "Jealous/6Jealous_C.wav"
+    "Jealous_B": "Jealous/1Jealous_B.wav"
+    "Jealous_A": "Jealous/6Jealous_A.wav"
+    "Jealous_D": "Jealous/6Jealous_D.wav"
+    "Jealous_C": "Jealous/2Jealous_C.wav"
+    "Jealous_D": "Jealous/5Jealous_D.wav"
+    "Jealous_B": "Jealous/5Jealous_B.wav"
+    "Jealous_C": "Jealous/3Jealous_C.wav"
+    "Jealous_D": "Jealous/1Jealous_D.wav"
+    "Jealous_A": "Jealous/3Jealous_A.wav"
+    "Jealous_A": "Jealous/5Jealous_A.wav"
+    "Jealous_A": "Jealous/2Jealous_A.wav"
+    "Jealous_A": "Jealous/4Jealous_A.wav"
+    "Jealous_C": "Jealous/4Jealous_C.wav"
+    "Jealous_B": "Jealous/3Jealous_B.wav"
+    "Jealous_B": "Jealous/4Jealous_B.wav"
+    "Jealous_B": "Jealous/6Jealous_B.wav"
+    "Jealous_D": "Jealous/3Jealous_D.wav"
+    "Jealous_B": "Jealous/2Jealous_B.wav"
+    "Jealous_D": "Jealous/2Jealous_D.wav"
+    "Jealous_C": "Jealous/1Jealous_C.wav"
