@@ -88,6 +88,7 @@ def on_message(client, userdata, message):
             repeats.clear()
             play("reset")
             return
+        previousState = currentState
         print("Changing state from "+currentState+" to "+payload)
         currentState = payload
 
@@ -96,7 +97,10 @@ def on_message(client, userdata, message):
         elif currentState == "ButNotForUs":
             play("butnotforus")
         else:
-            play("next_state")
+            if previousState == myHostname:
+                # only play the state transition twinkle on the just hero'd podium
+                unMute(myHostname)
+                play("next_state")
         return
     if mqtt.topic_matches_sub("status/"+myHostname+"/played", message.topic):
         if payload == cfg["podium"][myHostname]["hero"]:
