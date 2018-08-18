@@ -106,15 +106,16 @@ if __name__ == '__main__':
     cardmonitor.addObserver(cardobserver)
 
     publish.single("status/"+myHostname+"/rfid", "listening", hostname=mqttHost)
+    cardtype = AnyCardType()
 
     while True:
-        cardtype = AnyCardType()
         cardrequest = CardRequest(timeout=10, cardType=cardtype)
         try:
             cardservice = cardrequest.waitforcard()
 
         except CardRequestTimeoutException:
             print("retry:")
+            sleep(1)
            
         except KeyboardInterrupt:
 			print("exit")
