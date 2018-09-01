@@ -116,7 +116,7 @@ heros:
 podium:
   # default for all podium
   default:
-    "OK": "/usr/share/scratch/Media/Sounds/Electronic/ComputerBeeps2.wav"
+    "OK": "/usr/share/scratch/Media/Sounds/Electronic/Spiral.wav"
 
     "removed": ""
     "none": ""
