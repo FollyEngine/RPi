@@ -30,6 +30,8 @@ if [[ ¨$1¨ != ¨--setup¨ ]]; then
 	python audio/main.py $CONFIGFILE > audio-${DATE}.log 2>&1 &
 	python controller/main.py $CONFIGFILE > controller-${DATE}.log 2>&1 &
 	#/usr/bin/nohup sudo python neopixels/main.py $CONFIGFILE > neopixel-${DATE}.log 2>&1 &
+	python rmeote /main.py $CONFIGFILE > rmeote-${DATE}.log 2>&1 &
+	sudo python remote/main.py $CONFIGFILE /dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-event-mouse > rmeote-mouse-${DATE}.log 2>&1 &
 
 	echo "DONE"
 	exit
@@ -49,6 +51,8 @@ sudo pip install --no-cache-dir -r requirements.txt
 cd ../audio
 sudo pip install --no-cache-dir -r requirements.txt
 cd ../controller
+sudo pip install --no-cache-dir -r requirements.txt
+cd ../remote
 sudo pip install --no-cache-dir -r requirements.txt
 cd ..
 

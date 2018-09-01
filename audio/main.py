@@ -30,7 +30,9 @@ if "testsound" in cfg and cfg["testsound"] != "":
     testsound = cfg["testsound"]
 # end load config
 
-
+# TODO: fix this...
+# 100% CPU load using pygame:
+# https://github.com/pygame/pygame/issues/331
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 2048)
 pygame.init()
