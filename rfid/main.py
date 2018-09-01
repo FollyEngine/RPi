@@ -112,14 +112,16 @@ if __name__ == '__main__':
         cardrequest = CardRequest(timeout=10, cardType=cardtype)
         try:
             cardservice = cardrequest.waitforcard()
-
+            # stop the loop from spinning the cpu when the rfid tag is left on the reader
+            # this stops pcscd from maxing out too
+            sleep(1)
         except CardRequestTimeoutException:
             print("retry:")
             sleep(1)
            
         except KeyboardInterrupt:
 			print("exit")
-			sys.exit()
+			break
 
     # don't forget to remove observer, or the
     # monitor will poll forever...
