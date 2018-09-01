@@ -17,6 +17,12 @@ configFile = "config.yml"
 if len(sys.argv) > 1:
     configFile = sys.argv[1]
 
+if len(sys.argv) > 2:
+    infile_path = sys.argv[2] 
+else:
+    infile_path = "/dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-if01-event-kbd"
+
+
 with open(configFile, 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 
@@ -34,6 +40,10 @@ testsound='test.wav'
 
 ############
 keys = {
+    # /dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-if01-event-kbd
+    272: 'OK',
+    273: 'mouse_right_button',
+    # /dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-if01-event-kbd
     28: 'OK',
     103: 'up_arrow',
     108: 'down_arrow',
@@ -56,11 +66,6 @@ keys = {
 ###########################################
 if __name__ == '__main__':
     print("Connecting to MQTT at: %s" % mqttHost)
-
-if len(sys.argv) > 1:
-    infile_path = sys.argv[1] 
-else:
-    infile_path = "/dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-if01-event-kbd"
 
 #long int, long int, unsigned short, unsigned short, unsigned int
 FORMAT = 'llHHI'

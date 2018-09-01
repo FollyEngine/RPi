@@ -12,6 +12,10 @@ sparkles: "play-sparkles"
 
 # rfid -> object name
 items:
+    #testing
+    "0A3D02A4": "playhero"
+    "CAF7F5A3": "magnifying"
+
     #special codes
     "REMOVED": "removed"
     "(null)": "none"
@@ -112,6 +116,8 @@ heros:
 podium:
   # default for all podium
   default:
+    "OK": "/usr/share/scratch/Media/Sounds/Electronic/ComputerBeeps2.wav"
+
     "removed": ""
     "none": ""
     "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"

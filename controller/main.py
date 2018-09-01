@@ -107,8 +107,13 @@ def on_message(client, userdata, message):
             unMuteAll()
             state(cfg["heros"][myHostname]["next"])
         return
+    if mqtt.topic_matches_sub("follyengine/"+myHostname+"/remote", message.topic):
+        play(payload)
+        return
     try:
         if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
+            # TODO: this needs re-writing to only convert from rfid tag to item, post to MQ
+            # TODO: and then another even listens to item values on the MQ and converts to action
             item = cfg["items"][payload]
             print(myHostname+" got "+payload+" which is: "+item)
 
@@ -200,6 +205,7 @@ client.on_message=on_message #attach function to callback
 print("Connecting to MQTT at: %s" % mqttHost)
 client.connect(mqttHost) #connect to broker
 
+client.subscribe("follyengine/"+myHostname+"/remote")
 client.subscribe("follyengine/"+myHostname+"/rfid")
 client.subscribe("status/"+myHostname+"/played")  # used for hero mute and state
 
