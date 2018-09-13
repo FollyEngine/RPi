@@ -92,6 +92,7 @@ allowrepeats:
   sweet: "true"
   sour: "true"
   salty: "true"
+  "OK": "true"
 
 # The order of completion is 5 - 1 - 6 - 2 - 3 - 4."
 # hero item to its matching podium
