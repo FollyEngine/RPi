@@ -84,6 +84,14 @@ items:
 
     ## External comments
 
+#if item == "sven" or item == "twinkle" or item == "letter":
+allowrepeats:
+  sven: "true"
+  twinkle: "true"
+  letter: "true"
+  sweet: "true"
+  sour: "true"
+  salty: "true"
 
 # The order of completion is 5 - 1 - 6 - 2 - 3 - 4."
 # hero item to its matching podium

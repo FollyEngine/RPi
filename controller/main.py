@@ -168,10 +168,12 @@ def on_message(client, userdata, message):
                             # its not this podium's turn, so we read the non-hero text
                             item = "hero_no"
 
-            if item == "sven" or item == "twinkle" or item == "letter":
-                # don't do the no-repeat stuff here
-                play(item)
-                return
+            #if item == "sven" or item == "twinkle" or item == "letter", sweet, sour, salty
+            if "allowrepeats" in cfg:
+                if item in cfg["allowrepeats"]:
+                    # don't do the no-repeat stuff here
+                    play(item)
+                    return
 
             if item in repeats:
                 repeats[item] = 1 + repeats[item]
