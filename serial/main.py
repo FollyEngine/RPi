@@ -35,6 +35,14 @@ with serial.Serial('/dev/ttyUSB1', 9600, timeout=1) as ser:
         ser.write(b'\xA0\x04\xB0\x00\x02\xAA')
         sleep(1)
 
+        while True:
+            start = ser.read(2) # 0x00
+            id = ser.read(12)
+            tagid = int.from_bytes(id, byteorder="big")
+            print("tag == %s" % format(tagid, '#04x'))
+            sep = ser.read(1)
+            crc = ser.read(1)
+            trail = ser.read(1)
 
         #x = ser.read()          # read one byte
         #s = ser.read(10)        # read up to ten bytes (timeout)
