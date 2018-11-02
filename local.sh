@@ -26,12 +26,12 @@ if [[ ¨$1¨ != ¨--setup¨ ]]; then
 	sleep 15
 	ping -c 1 $MQTTHOST
 
-	python rfid/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
-	python audio/main.py $CONFIGFILE > audio-${DATE}.log 2>&1 &
-	python controller/main.py $CONFIGFILE > controller-${DATE}.log 2>&1 &
+	python3 rfid/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
+	python3 audio/main.py $CONFIGFILE > audio-${DATE}.log 2>&1 &
+	python3 controller/main.py $CONFIGFILE > controller-${DATE}.log 2>&1 &
 	#/usr/bin/nohup sudo python neopixels/main.py $CONFIGFILE > neopixel-${DATE}.log 2>&1 &
-	python rmeote /main.py $CONFIGFILE > rmeote-${DATE}.log 2>&1 &
-	sudo python remote/main.py $CONFIGFILE /dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-event-mouse > rmeote-mouse-${DATE}.log 2>&1 &
+	python3 rmeote /main.py $CONFIGFILE > rmeote-${DATE}.log 2>&1 &
+	sudo python3 remote/main.py $CONFIGFILE /dev/input/by-id/usb-AleTV_Remote_V1_RF_USB_Controller-event-mouse > rmeote-mouse-${DATE}.log 2>&1 &
 
 	echo "DONE"
 	exit
@@ -42,18 +42,19 @@ fi
 # get pyscard
 sudo apt-get update
 sudo apt-get upgrade -yq
-sudo apt-get install -yq python-pyscard python-pip pcscd git python-setuptools libpcsclite-dev python-dev mosquitto-clients mosquitto scratch python-pygame
+sudo apt-get install -yq python3-pyscard python3-pip pcscd git python3-setuptools libpcsclite-dev python3-dev \
+			mosquitto-clients mosquitto scratch python-pygame
 
 git pull
 
 cd rfid
-sudo pip install --no-cache-dir -r requirements.txt
+sudo pip3 install --no-cache-dir -r requirements.txt
 cd ../audio
-sudo pip install --no-cache-dir -r requirements.txt
+sudo pip3 install --no-cache-dir -r requirements.txt
 cd ../controller
-sudo pip install --no-cache-dir -r requirements.txt
+sudo pip3 install --no-cache-dir -r requirements.txt
 cd ../remote
-sudo pip install --no-cache-dir -r requirements.txt
+sudo pip3 install --no-cache-dir -r requirements.txt
 cd ..
 
 cat /proc/device-tree/model
