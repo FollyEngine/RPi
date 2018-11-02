@@ -1,3 +1,4 @@
+#!//usr/bin/python
 
 from __future__ import print_function
 from time import sleep
@@ -120,8 +121,8 @@ if __name__ == '__main__':
             sleep(1)
            
         except KeyboardInterrupt:
-			print("exit")
-			break
+            print("exit")
+            break
 
     # don't forget to remove observer, or the
     # monitor will poll forever...
