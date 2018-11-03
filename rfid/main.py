@@ -36,10 +36,6 @@ mqttHost = config.getValue("mqtthostname", "mqtt")
 myHostname = config.getValue("hostname", socket.gethostname())
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, "rfid-nfc")
 
-sounddir = '/mnt/'
-testsound='test.wav'
-# end load config
-
 # a simple card observer that prints inserted/removed cards
 class PrintObserver(CardObserver):
     """A simple card observer that is notified
@@ -50,13 +46,15 @@ class PrintObserver(CardObserver):
     def update(self, observable, actions):
         (addedcards, removedcards) = actions
         for card in addedcards:
+            print(type(card))
             info = toHexString(card.atr).replace(' ','')
             print("+Inserted: ", info)
+            
 
             connection = card.createConnection()
             connection.connect( CardConnection.T1_protocol )
             response, sw1, sw2 = connection.transmit(GETUID)
-            #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
+            print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
             tagid = toHexString(response).replace(' ','')
             print ("tagid ",tagid)
 
@@ -90,8 +88,11 @@ if __name__ == '__main__':
     cardobserver = PrintObserver()
     cardmonitor.addObserver(cardobserver)
 
-# TODO: this should tell the listener what the device is, and use the mqtt retsin flag
-    hostmqtt.publish("status", {"status": "listening"})
+# TODO: use the mqtt retain flag for status messages
+    devices=[]
+    for r in readers:
+        devices.append("%s" % r)
+    hostmqtt.publish("status", {"status": "listening", "devices": devices})
     cardtype = AnyCardType()
 
     while True:
