@@ -27,11 +27,13 @@ class MQTT:
 
     def connect(self):
         global client
-        client = mqttclient.Client(self.myhostname)
+        #TODO: can we ask what clients are connected and detect collisions?
+        clientname="%s_%s" % (self.myhostname, self.devicename)
+        client = mqttclient.Client(clientname)
         #client.on_message=on_message #attach function to callback
         client.on_disconnect=on_disconnect
 
-        print("Connecting to MQTT at: %s" % self.mqtthostname)
+        print("Connecting to MQTT as %s at: %s" % (clientname, self.mqtthostname))
         client.connect(self.mqtthostname)
 
     def set_on_message(self, on_message):
