@@ -10,13 +10,17 @@ class MQTT:
         self.devicename = devicename
         self.connect()
 
-    def publishString(self, verb, message):
+    def publishString(self, host, device, verb, message):
         global client
-        client.publish("%s/%s/%s" % (self.myhostname, self.devicename, verb), message)
+        client.publish("%s/%s/%s" % (host, device, verb), message)
+
+    def publishL(self, host, device, verb, obj):
+        obj['device'] = self.devicename
+        self.publishString(host, device, verb, json.dumps(obj))
 
     def publish(self, verb, obj):
         obj['device'] = self.devicename
-        self.publishString(verb, json.dumps(obj))
+        self.publishString(self.myhostname, self.devicename, verb, json.dumps(obj))
 
     def subscribe(self, verb):
         self.subscribeL(self.myhostname, self.devicename, verb)
