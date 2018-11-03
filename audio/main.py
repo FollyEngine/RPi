@@ -12,9 +12,11 @@ sys.path.append('./rfid/')
 import config
 import mqtt
 
+DEVICENAME="audio"
+
 mqttHost = config.getValue("mqtthostname", "mqtt")
 myHostname = config.getValue("hostname", socket.gethostname())
-hostmqtt = mqtt.MQTT(mqttHost, myHostname, "audio")
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
 
 sounddir = config.getValue("sounddir", "/mnt/")
 testsound = config.getValue("testsound", "test.wav")
@@ -64,23 +66,23 @@ def on_message(client, userdata, message):
     #print("message qos=",message.qos)
     #print("message retain flag=",message.retain)
     try:
-        if hostmqtt.topic_matches_sub("follyengine/all/play", message.topic) and payload != "":
+        if hostmqtt.topic_matches_sub("all/audio/play", message.topic) and payload != "":
             # everyone
             print("everyone plays "+payload)
             play(payload)
-        elif hostmqtt.topic_matches_sub("follyengine/all/test", message.topic):
+        elif hostmqtt.topic_matches_sub("all/audio/test", message.topic):
             print("everyone plays test.wav")
             play(testsound)
-        elif hostmqtt.topic_matches_sub("follyengine/"+mqtt_host_device+"/play", message.topic) and payload != "":
+        elif hostmqtt.topic_matches_sub(myHostname+"/audio/play", message.topic) and payload != "":
             print(myHostname+" plays "+payload)
             play(payload)
-        elif hostmqtt.topic_matches_sub("follyengine/all/mute", message.topic) or hostmqtt.topic_matches_sub("follyengine/"+myHostname+"/mute", message.topic):
+        elif hostmqtt.topic_matches_sub("all/audio/mute", message.topic) or hostmqtt.topic_matches_sub(myHostname+"/audio/mute", message.topic):
             isMuted = True
             print("muted")
             # podiums stop making sounds
             pygame.mixer.fadeout(100)
             # TODO: add an exception for the hero podium...
-        elif hostmqtt.topic_matches_sub("follyengine/all/unmute", message.topic) or hostmqtt.topic_matches_sub("follyengine/"+myHostname+"/unmute", message.topic):
+        elif hostmqtt.topic_matches_sub("all/audio/unmute", message.topic) or hostmqtt.topic_matches_sub(myHostname+"/audio/unmute", message.topic):
             # podiums can make sounds
             isMuted = False
             print("unmuted")
@@ -93,11 +95,14 @@ def on_message(client, userdata, message):
 # TODO: I'd like to make this implicit
 hostmqtt.set_on_message(on_message)
 
-mqtt_host_device="%s_%s" % (myHostname, "rfid-nfc")
-hostmqtt.subscribe("follyengine/"+mqtt_host_device+"/play")
-hostmqtt.subscribe("follyengine/"+mqtt_host_device+"/unmute")
-hostmqtt.subscribe("follyengine/+/test")
-hostmqtt.subscribe("follyengine/all/+")
+hostmqtt.subscribe("play")
+hostmqtt.subscribe("mute")
+hostmqtt.subscribe("unmute")
+hostmqtt.subscribe("test")
+hostmqtt.subscribeL("all", DEVICENAME, "test")
+hostmqtt.subscribeL("all", DEVICENAME, "play")
+hostmqtt.subscribeL("all", DEVICENAME, "mute")
+hostmqtt.subscribeL("all", DEVICENAME, "unmute")
 
 hostmqtt.publish("status", {"status": "listening"})
 

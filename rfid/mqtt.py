@@ -3,27 +3,27 @@
 import paho.mqtt.client as mqttclient
 import json
 
-organisation = "follyengine"
-
-
 class MQTT:
     def __init__(self, mqtthostname, myhostname, devicename):
         self.mqtthostname = mqtthostname
-        self.myhostname = "%s_%s" %(myhostname, devicename)
+        self.myhostname = myhostname
         self.devicename = devicename
         self.connect()
 
     def publishString(self, verb, message):
         global client
-        client.publish("%s/%s/%s" % (organisation, self.myhostname, verb), message)
+        client.publish("%s/%s/%s" % (self.myhostname, self.devicename, verb), message)
 
     def publish(self, verb, obj):
         obj['device'] = self.devicename
         self.publishString(verb, json.dumps(obj))
 
-    def subscribe(self, topic):
+    def subscribe(self, verb):
+        self.subscribeL(self.myhostname, self.devicename, verb)
+
+    def subscribeL(self, host, device, verb):
         global client
-        client.subscribe(topic)
+        client.subscribe("%s/%s/%s" % (host, device, verb))
 
     def connect(self):
         global client
@@ -45,7 +45,8 @@ class MQTT:
     def topic_matches_sub(self, sub, topic):
         return mqttclient.topic_matches_sub(sub, topic)
 
-# TODOL move this back into the class
+#TODO: move this back into the class
+#TODO: this happens when a message failed to be sent - need to resend it..
 def on_disconnect(client, userdata,rc=0):
     print("DisConnected result code "+str(rc))
     client.reconnect()

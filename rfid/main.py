@@ -25,7 +25,6 @@ import json
 import socket
 
 
-
 #new libs
 import mqtt
 import config

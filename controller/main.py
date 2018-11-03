@@ -3,34 +3,21 @@ import paho.mqtt.publish as publish
 import time
 import sys
 import socket
-#from subprocess import call
-import yaml
 
 allMuted = False
 repeats = {}
 
-#######
-# load config (extract to lib)
-configFile = "config.yml"
-if len(sys.argv) > 1:
-    configFile = sys.argv[1]
+#new libs
+import mqtt
+import config
 
-with open(configFile, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+mqttHost = config.getValue("mqtthostname", "mqtt")
+myHostname = config.getValue("hostname", socket.gethostname())
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, "controller")
 
-mqttHost = "mqtt"
-if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
-    mqttHost = cfg["mqtthostname"]
+currentState = config.getValue("start_state", "PodiumX")
 
-myHostname = socket.gethostname()
-if "hostname" in cfg and cfg["hostname"] != "":
-    myHostname = cfg["hostname"]
-
-currentState = "PodiumX"
-if "start_state" in cfg and cfg["start_state"] != "":
-    currentState = cfg["start_state"]
-
-print(cfg["heros"][currentState])
+print(config.cfg["heros"][currentState])
 # end load config
 
 ############
