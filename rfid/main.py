@@ -21,29 +21,20 @@ from threading import Event
 # start pcscd daemon
 from subprocess import call
 
-import paho.mqtt.publish as publish
 import json
 import socket
-import yaml
+
+
+
+#new libs
+import mqtt
+import config
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
 
-#######
-# load config (extract to lib)
-configFile = "config.yml"
-if len(sys.argv) > 1:
-    configFile = sys.argv[1]
-
-with open(configFile, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
-
-mqttHost = "mqtt"
-if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
-    mqttHost = cfg["mqtthostname"]
-
-myHostname = socket.gethostname()
-if "hostname" in cfg and cfg["hostname"] != "":
-    myHostname = cfg["hostname"]
+mqttHost = config.getValue("mqtthostname", "mqtt")
+myHostname = config.getValue("hostname", socket.gethostname())
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, "rfid-nfc")
 
 sounddir = '/mnt/'
 testsound='test.wav'
@@ -59,37 +50,30 @@ class PrintObserver(CardObserver):
     def update(self, observable, actions):
         (addedcards, removedcards) = actions
         for card in addedcards:
-            print("+Inserted: ", toHexString(card.atr))
+            info = toHexString(card.atr).replace(' ','')
+            print("+Inserted: ", info)
 
-            try:
-                connection = card.createConnection()
-                connection.connect( CardConnection.T1_protocol )
-                response, sw1, sw2 = connection.transmit(GETUID)
-                #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
-                tagid = toHexString(response).replace(' ','')
-                print ("tagid ",tagid)
-    
-                #payload = json.dumps({
-                #        'id': 'one',
-                #        'tag': tagid,
-                #        'event': 'inserted'
-                #    });
-                #publish.single("follyengine/rfid/inserted", payload, hostname=mqttHost)
-                publish.single("follyengine/"+myHostname+"/rfid", tagid, hostname=mqttHost)
-            except:
-                print("ERROR")
+            connection = card.createConnection()
+            connection.connect( CardConnection.T1_protocol )
+            response, sw1, sw2 = connection.transmit(GETUID)
+            #print ('response: ', response, ' status words: ', "%x %x" % (sw1, sw2))
+            tagid = toHexString(response).replace(' ','')
+            print ("tagid ",tagid)
 
+            hostmqtt.publish("scan", {
+                    'atr': info,
+                    'tag': tagid,
+                    'event': 'inserted'
+                })
 
         for card in removedcards:
-            print("-Removed:  ", toHexString(card.atr))
-
-            publish.single("follyengine/"+myHostname+"/rfid", "REMOVED", hostname=mqttHost)
+            info = toHexString(card.atr).replace(' ','')
+            print("+Removed: ", info)
+            hostmqtt.publish("removed", {"atr": info, 'event': 'removed'})
 
 
 ###########################################
 if __name__ == '__main__':
-    print("Connecting to MQTT at: %s" % mqttHost)
-
     call(['/usr/sbin/pcscd'])
     # TODO: detect if there isn't a reader pluigged in, and exit...
     readers = smartcard.System.readers()
@@ -106,7 +90,8 @@ if __name__ == '__main__':
     cardobserver = PrintObserver()
     cardmonitor.addObserver(cardobserver)
 
-    publish.single("status/"+myHostname+"/rfid", "listening", hostname=mqttHost)
+# TODO: this should tell the listener what the device is, and use the mqtt retsin flag
+    hostmqtt.publish("status", {"status": "listening"})
     cardtype = AnyCardType()
 
     while True:
