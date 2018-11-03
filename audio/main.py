@@ -55,64 +55,47 @@ def play(audiofile):
         print("Failed to play %s" % audioPath)
         traceback.print_exc()
 
-############
-def on_message(client, userdata, message):
-    global isMuted
-
-    try:
-        raw_payload=str(message.payload.decode("utf-8"))
-        print("RAW: "+message.topic+": "+raw_payload)
-        if raw_payload == "" or raw_payload == "REMOVED" or raw_payload == "(null)":
-            return
-
-        payload = hostmqtt.decode(raw_payload)
-        print("DECODED: "+message.topic+": "+str(payload))
-        #print("message received " ,payload)
-        #print("message topic=",message.topic)
-        #print("message qos=",message.qos)
-        #print("message retain flag=",message.retain)
-
-        if hostmqtt.topic_matches_sub("all/audio/play", message.topic) and payload != "":
-            # everyone
-            sound = payload["sound"]
-            print("everyone plays "+sound)
-            play(sound)
-        elif hostmqtt.topic_matches_sub("all/audio/test", message.topic):
-            print("everyone plays test.wav")
-            play(testsound)
-        elif hostmqtt.topic_matches_sub(myHostname+"/audio/play", message.topic) and payload != "":
-            sound = payload["sound"]
-            print(myHostname+" plays "+sound)
-            play(sound)
-        elif hostmqtt.topic_matches_sub("all/audio/mute", message.topic) or hostmqtt.topic_matches_sub(myHostname+"/audio/mute", message.topic):
-            isMuted = True
-            print("muted")
-            # podiums stop making sounds
-            pygame.mixer.fadeout(100)
-            # TODO: add an exception for the hero podium...
-        elif hostmqtt.topic_matches_sub("all/audio/unmute", message.topic) or hostmqtt.topic_matches_sub(myHostname+"/audio/unmute", message.topic):
-            # podiums can make sounds
-            isMuted = False
-            print("unmuted")
-    except Exception as e:
-        traceback.print_exc()
-
 ########################################
+# on_message subscription functions
+def msg_play(topic, payload):
+    sound = payload["sound"]
+    print("everyone plays "+sound)
+    play(sound)
 
-# TODO: I'd like to make this implicit
-hostmqtt.set_on_message(on_message)
+hostmqtt.subscribe("play", msg_play)
+hostmqtt.subscribeL("all", DEVICENAME, "play", msg_play)
 
-hostmqtt.subscribe("play")
-hostmqtt.subscribe("mute")
-hostmqtt.subscribe("unmute")
-hostmqtt.subscribe("test")
-hostmqtt.subscribeL("all", DEVICENAME, "test")
-hostmqtt.subscribeL("all", DEVICENAME, "play")
-hostmqtt.subscribeL("all", DEVICENAME, "mute")
-hostmqtt.subscribeL("all", DEVICENAME, "unmute")
+
+def msg_test(topic, payload):
+    print("everyone plays test.wav")
+    play(testsound)
+
+hostmqtt.subscribe("test", msg_test)
+hostmqtt.subscribeL("all", DEVICENAME, "test", msg_test)
+
+
+def msg_mute(topic, payload):
+    global isMuted
+    isMuted = True
+    print("muted")
+    pygame.mixer.fadeout(100)
+
+hostmqtt.subscribe("mute", msg_mute)
+hostmqtt.subscribeL("all", DEVICENAME, "mute", msg_mute)
+
+def msg_unmute(topic, payload):
+    global isMuted
+    isMuted = False
+    print("unmuted")
+
+hostmqtt.subscribe("unmute", msg_mute)
+hostmqtt.subscribeL("all", DEVICENAME, "unmute", msg_mute)
+########################################
 
 hostmqtt.publish("status", {"status": "listening"})
 
+
+# trigger a play...
 play(testsound)
 
 try:

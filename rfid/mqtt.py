@@ -2,12 +2,14 @@
 
 import paho.mqtt.client as mqttclient
 import json
+import traceback
 
 class MQTT:
     def __init__(self, mqtthostname, myhostname, devicename):
         self.mqtthostname = mqtthostname
         self.myhostname = myhostname
         self.devicename = devicename
+        self.sub = {}
         self.connect()
 
     def publishString(self, host, device, verb, message):
@@ -22,12 +24,15 @@ class MQTT:
         obj['device'] = self.devicename
         self.publishString(self.myhostname, self.devicename, verb, json.dumps(obj))
 
-    def subscribe(self, verb):
-        self.subscribeL(self.myhostname, self.devicename, verb)
-
-    def subscribeL(self, host, device, verb):
+    def subscribeL(self, host, device, verb, function=""):
         global client
-        client.subscribe("%s/%s/%s" % (host, device, verb))
+        sub_topic = "%s/%s/%s" % (host, device, verb)
+        client.subscribe(sub_topic)
+        print("Subscribed to %s" % sub_topic)
+        self.sub[sub_topic] = function
+
+    def subscribe(self, verb, function=""):
+        self.subscribeL(self.myhostname, self.devicename, verb, function)
 
     def connect(self):
         global client
@@ -36,7 +41,7 @@ class MQTT:
         client = mqttclient.Client(clientname)
         #client.on_message=on_message #attach function to callback
         client.on_disconnect=self.on_disconnect
-
+        self.set_on_message(self.on_message)
         print("Connecting to MQTT as %s at: %s" % (clientname, self.mqtthostname))
         client.connect(self.mqtthostname)
 
@@ -60,3 +65,41 @@ class MQTT:
         client.reconnect()
         client.publish("status", {"status": "reconnecting"})
 
+#class Object(object):
+#    pass
+#a = Object()
+#a.topic = "Podium5/audio/play"
+#a.payload = '{"sound": "'+testsound+'"}'
+#hostmqtt.on_message(mqtt.client, '', a)
+    def on_message(self, client, userdata, message):
+        print("on_message %s" % message.topic)
+        message_func = ""
+        try:
+            if message.topic in self.sub:
+                message_func = self.sub[message.topic]
+                print("direct")
+            else:
+                for t in self.sub:
+                    if self.topic_matches_sub(t, message.topic):
+                        message_func = self.sub[t]
+                        print("match")
+                        break
+
+            print("asd")
+            print(message_func)
+            if message_func == "":
+                print("No message_func found for %s" % message.topic)
+                return
+
+            raw_payload=str(message.payload.decode("utf-8"))
+            print("HHRAW: "+message.topic+": "+raw_payload)
+
+            if raw_payload == "" or raw_payload == "REMOVED" or raw_payload == "(null)":
+                return
+
+            payload = self.decode(raw_payload)
+            print("DECODED: "+message.topic+": "+str(payload))
+            message_func(message.topic, payload)
+        except Exception as e:
+            print("exception:")
+            traceback.print_exc()
