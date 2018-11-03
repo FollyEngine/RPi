@@ -114,6 +114,8 @@ if __name__ == '__main__':
     # monitor will poll forever...
     cardmonitor.deleteObserver(cardobserver)
 
+    hostmqtt.publish("status",{"status": "STOPPED"})
+
     import sys
     if 'win32' == sys.platform:
         print('press Enter to continue')

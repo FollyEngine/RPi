@@ -1,7 +1,10 @@
 
 
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqttclient
 import json
+
+organisation = "follyengine"
+
 
 class MQTT:
     def __init__(self, mqtthostname, myhostname, devicename):
@@ -11,26 +14,40 @@ class MQTT:
         self.connect()
 
     def publishString(self, verb, message):
-        self.client.publish("%s/%s/%s" % (verb, self.myhostname, self.devicename), message)
+        global client
+        client.publish("%s/%s/%s" % (organisation, self.myhostname, verb), message)
 
     def publish(self, verb, obj):
         obj['device'] = self.devicename
         self.publishString(verb, json.dumps(obj))
 
     def subscribe(self, topic):
-        self.client.subscribe(topic)
+        global client
+        client.subscribe(topic)
 
     def connect(self):
-        self.client = mqtt.Client(self.myhostname)
+        global client
+        client = mqttclient.Client(self.myhostname)
         #client.on_message=on_message #attach function to callback
-        self.client.on_disconnect=self.on_disconnect
+        client.on_disconnect=on_disconnect
 
         print("Connecting to MQTT at: %s" % self.mqtthostname)
-        self.client.connect(self.mqtthostname)
+        client.connect(self.mqtthostname)
 
     def set_on_message(self, on_message):
-        self.client.on_message=on_message #attach function to callback
+        global client
+        client.on_message=on_message #attach function to callback
 
-    def on_disconnect(client, userdata,rc=0):
-        print("DisConnected result code "+str(rc))
-        #client.loop_stop()
+    def loop_forever(self):
+        global client
+        client.loop_forever()
+
+    def topic_matches_sub(self, sub, topic):
+        return mqttclient.topic_matches_sub(sub, topic)
+
+# TODOL move this back into the class
+def on_disconnect(client, userdata,rc=0):
+    print("DisConnected result code "+str(rc))
+    client.reconnect()
+    client.publish("status", {"status": "reconnecting"})
+

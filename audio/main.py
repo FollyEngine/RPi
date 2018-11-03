@@ -1,34 +1,23 @@
-import paho.mqtt.client as mqtt #import the client1
+#!/usr/bin/python3
+
 import time
 import sys
 import socket
 import pygame
-import yaml
 
-#######
-# load config (extract to lib)
-configFile = "config.yml"
-if len(sys.argv) > 1:
-    configFile = sys.argv[1]
 
-with open(configFile, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./rfid/')
+import config
+import mqtt
 
-mqttHost = "mqtt"
-if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
-    mqttHost = cfg["mqtthostname"]
+mqttHost = config.getValue("mqtthostname", "mqtt")
+myHostname = config.getValue("hostname", socket.gethostname())
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, "audio")
 
-myHostname = socket.gethostname()
-if "hostname" in cfg and cfg["hostname"] != "":
-    myHostname = cfg["hostname"]
-
-sounddir = '/mnt/'
-if "sounddir" in cfg and cfg["sounddir"] != "":
-    sounddir = cfg["sounddir"]
-testsound='test.wav'
-if "testsound" in cfg and cfg["testsound"] != "":
-    testsound = cfg["testsound"]
-# end load config
+sounddir = config.getValue("sounddir", "/mnt/")
+testsound = config.getValue("testsound", "test.wav")
 
 # TODO: fix this...
 # 100% CPU load using pygame:
@@ -59,17 +48,11 @@ def play(audiofile):
         pygame.mixer.music.play()
         while pygame.mixer.music.get_busy():
             pygame.time.Clock().tick(10)
-        client.publish("status/"+myHostname+"/played",audiofile)
+        hostmqtt.publish("played", {"status": "played", "sound": audiofile})
     except Exception as e:
         print("Failed to play %s" % audioPath)
         print("Exception:")
         print(e)
-
-
-############
-def on_disconnect(client, userdata,rc=0):
-    print("DisConnected result code "+str(rc))
-    #client.loop_stop()
 
 ############
 def on_message(client, userdata, message):
@@ -80,48 +63,49 @@ def on_message(client, userdata, message):
     #print("message topic=",message.topic)
     #print("message qos=",message.qos)
     #print("message retain flag=",message.retain)
-    if mqtt.topic_matches_sub("follyengine/all/play", message.topic) and payload != "":
-        # everyone
-        print("everyone plays "+payload)
-        play(payload)
-    elif mqtt.topic_matches_sub("follyengine/all/test", message.topic):
-        print("everyone plays test.wav")
-        play(testsound)
-    elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/play", message.topic) and payload != "":
-        print(myHostname+" plays "+payload)
-        play(payload)
-    elif mqtt.topic_matches_sub("follyengine/all/mute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/mute", message.topic):
-        isMuted = True
-        print("muted")
-        # podiums stop making sounds
-        pygame.mixer.fadeout(100)
-        # TODO: add an exception for the hero podium...
-    elif mqtt.topic_matches_sub("follyengine/all/unmute", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/unmute", message.topic):
-        # podiums can make sounds
-        isMuted = False
-        print("unmuted")
+    try:
+        if hostmqtt.topic_matches_sub("follyengine/all/play", message.topic) and payload != "":
+            # everyone
+            print("everyone plays "+payload)
+            play(payload)
+        elif hostmqtt.topic_matches_sub("follyengine/all/test", message.topic):
+            print("everyone plays test.wav")
+            play(testsound)
+        elif hostmqtt.topic_matches_sub("follyengine/"+mqtt_host_device+"/play", message.topic) and payload != "":
+            print(myHostname+" plays "+payload)
+            play(payload)
+        elif hostmqtt.topic_matches_sub("follyengine/all/mute", message.topic) or hostmqtt.topic_matches_sub("follyengine/"+myHostname+"/mute", message.topic):
+            isMuted = True
+            print("muted")
+            # podiums stop making sounds
+            pygame.mixer.fadeout(100)
+            # TODO: add an exception for the hero podium...
+        elif hostmqtt.topic_matches_sub("follyengine/all/unmute", message.topic) or hostmqtt.topic_matches_sub("follyengine/"+myHostname+"/unmute", message.topic):
+            # podiums can make sounds
+            isMuted = False
+            print("unmuted")
+    except Exception as e:
+        print("Exception:")
+        print(e)
 
 ########################################
 
-client = mqtt.Client(myHostname+"_audio") #create new instance
-client.on_message=on_message #attach function to callback
-client.on_disconnect=on_disconnect
+# TODO: I'd like to make this implicit
+hostmqtt.set_on_message(on_message)
 
-print("Connecting to MQTT at: %s" % mqttHost)
-client.connect(mqttHost) #connect to broker
+mqtt_host_device="%s_%s" % (myHostname, "rfid-nfc")
+hostmqtt.subscribe("follyengine/"+mqtt_host_device+"/play")
+hostmqtt.subscribe("follyengine/"+mqtt_host_device+"/unmute")
+hostmqtt.subscribe("follyengine/+/test")
+hostmqtt.subscribe("follyengine/all/+")
 
-client.subscribe("follyengine/"+myHostname+"/play")
-client.subscribe("follyengine/"+myHostname+"/unmute")
-client.subscribe("follyengine/+/test")
-client.subscribe("follyengine/all/+")
-
-client.publish("status/"+myHostname+"/audio","STARTED")
+hostmqtt.publish("status", {"status": "listening"})
 
 play(testsound)
 
 try:
-    client.loop_forever()
+    hostmqtt.loop_forever()
 except KeyboardInterrupt:
     print("exit")
 
-client.publish("status/"+myHostname+"/audio","STOPPED")
+hostmqtt.publish("status",{"status": "STOPPED"})
