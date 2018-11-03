@@ -45,7 +45,6 @@ class PrintObserver(CardObserver):
     def update(self, observable, actions):
         (addedcards, removedcards) = actions
         for card in addedcards:
-            print(type(card))
             info = toHexString(card.atr).replace(' ','')
             print("+Inserted: ", info)
             

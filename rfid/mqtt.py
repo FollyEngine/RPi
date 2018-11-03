@@ -35,7 +35,7 @@ class MQTT:
         clientname="%s_%s" % (self.myhostname, self.devicename)
         client = mqttclient.Client(clientname)
         #client.on_message=on_message #attach function to callback
-        client.on_disconnect=on_disconnect
+        client.on_disconnect=self.on_disconnect
 
         print("Connecting to MQTT as %s at: %s" % (clientname, self.mqtthostname))
         client.connect(self.mqtthostname)
@@ -54,10 +54,9 @@ class MQTT:
     def decode(self, raw):
         return json.loads(raw)
 
-#TODO: move this back into the class
-#TODO: this happens when a message failed to be sent - need to resend it..
-def on_disconnect(client, userdata,rc=0):
-    print("DisConnected result code "+str(rc))
-    client.reconnect()
-    client.publish("status", {"status": "reconnecting"})
+    #TODO: this happens when a message failed to be sent - need to resend it..
+    def on_disconnect(self, innerclient, userdata,rc=0):
+        print("DisConnected result code "+str(rc))
+        client.reconnect()
+        client.publish("status", {"status": "reconnecting"})
 
