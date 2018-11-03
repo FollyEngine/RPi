@@ -1,13 +1,19 @@
+#!//usr/bin/python3
+
 import paho.mqtt.client as mqtt #import the client1
 import paho.mqtt.publish as publish
 import time
 import sys
 import socket
+import traceback
 
 allMuted = False
 repeats = {}
 
-#new libs
+
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./rfid/')
 import mqtt
 import config
 
@@ -15,43 +21,42 @@ mqttHost = config.getValue("mqtthostname", "mqtt")
 myHostname = config.getValue("hostname", socket.gethostname())
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, "controller")
 
-currentState = config.getValue("start_state", "PodiumX")
+currentState = "NEWNEWNEW" #config.getValue("start_state", "PodiumX")
 
-print(config.cfg["heros"][currentState])
 # end load config
 
 ############
 def muteAll():
-    publish.single("follyengine/all/mute", "", hostname=mqttHost)
+    hostmqtt.publishL("all", "audio", "mute", {})
 
 ############
 def unMuteAll():
-    publish.single("follyengine/all/unmute", "", hostname=mqttHost)
+    hostmqtt.publishL("all", "audio", "unmute", {})
 
 ############
 def unMute(host):
-    publish.single("follyengine/"+host+"/unmute", host, hostname=mqttHost)
+    hostmqtt.publishL(host, "audio", "mute", {})
 
 ############
 def play(item):
     audiofile = ""
-    if "podium" in cfg:
-        if "default" in cfg["podium"]:
-            if "(null)" in cfg["podium"]["default"]:
-                audiofile = cfg["podium"]["default"]["(null)"]
-        if "default" in cfg["podium"]:
-            if item in cfg["podium"]["default"]:
-                audiofile = cfg["podium"]["default"][item]
-        if myHostname in cfg["podium"]:
-            if item in cfg["podium"][myHostname]:
-                audiofile = cfg["podium"][myHostname][item]
+    if "podium" in config.cfg:
+        if "default" in config.cfg["podium"]:
+            if "(null)" in config.cfg["podium"]["default"]:
+                audiofile = config.cfg["podium"]["default"]["(null)"]
+        if "default" in config.cfg["podium"]:
+            if item in config.cfg["podium"]["default"]:
+                audiofile = config.cfg["podium"]["default"][item]
+        if myHostname in config.cfg["podium"]:
+            if item in config.cfg["podium"][myHostname]:
+                audiofile = config.cfg["podium"][myHostname][item]
 
-    publish.single("follyengine/"+myHostname+"/play", audiofile, hostname=mqttHost)
+    hostmqtt.publishL(myHostname, "audio", "play", {"sound": audiofile})
+
 
 ############
 def state(nextState):
-    publish.single("follyengine/all/state", nextState, hostname=mqttHost)
-
+    hostmqtt.publishL("all", "state", "set", {"state": nextState})
 
 ############
 def on_message(client, userdata, message):
@@ -59,50 +64,57 @@ def on_message(client, userdata, message):
     global currentState
     global repeats
 
-    payload=str(message.payload.decode("utf-8"))
-    if payload == "" or payload == "REMOVED" or payload == "(null)":
-        return
-
-    print(message.topic+": "+payload)
-
-    #print("message received " ,payload)
-    #print("message topic=",message.topic)
-    #print("message qos=",message.qos)
-    #print("message retain flag=",message.retain)
-    if mqtt.topic_matches_sub("follyengine/all/state", message.topic):
-        if payload == "reset":
-            currentState = cfg["start_state"]
-            repeats.clear()
-            play("reset")
-            return
-        previousState = currentState
-        print("Changing state from "+currentState+" to "+payload)
-        currentState = payload
-
-        if currentState == "FutureText":
-            play("future")
-        elif currentState == "ButNotForUs":
-            play("butnotforus")
-        else:
-            if previousState == myHostname:
-                # only play the state transition twinkle on the just hero'd podium
-                unMute(myHostname)
-                play("next_state")
-        return
-    if mqtt.topic_matches_sub("status/"+myHostname+"/played", message.topic):
-        if payload == cfg["podium"][myHostname]["hero"]:
-            unMuteAll()
-            state(cfg["heros"][myHostname]["next"])
-        return
-    if mqtt.topic_matches_sub("follyengine/"+myHostname+"/remote", message.topic):
-        play(payload)
-        return
     try:
-        if mqtt.topic_matches_sub("follyengine/all/rfid", message.topic) or mqtt.topic_matches_sub("follyengine/"+myHostname+"/rfid", message.topic):
+        raw_payload=str(message.payload.decode("utf-8"))
+        print("RAW: "+message.topic+": "+raw_payload)
+        if raw_payload == "" or raw_payload == "REMOVED" or raw_payload == "(null)":
+            return
+
+        payload = hostmqtt.decode(raw_payload)
+        print("DECODED: "+message.topic+": "+str(payload))
+
+        #print("message received " ,payload)
+        #print("message topic=",message.topic)
+        #print("message qos=",message.qos)
+        #print("message retain flag=",message.retain)
+        if hostmqtt.topic_matches_sub("all/state/set", message.topic):
+            nextState = payload["state"]
+            if nextState == "reset":
+                currentState = config.cfg["start_state"]
+                repeats.clear()
+                play("reset")
+                return
+            previousState = currentState
+            print("Changing state from "+currentState+" to "+nextState)
+            currentState = nextState
+            if previousState == "NEWNEWNEW":
+                unMuteAll()
+            elif currentState == "FutureText":
+                play("future")
+            elif currentState == "ButNotForUs":
+                play("butnotforus")
+            else:
+                if previousState == myHostname:
+                    # only play the state transition twinkle on the just hero'd podium
+                    unMute(myHostname)
+                    play("next_state")
+            return
+        if hostmqtt.topic_matches_sub(myHostname+"/audio/played", message.topic):
+            sound = payload["sound"]
+            if sound == config.cfg["podium"][myHostname]["hero"]:
+                unMuteAll()
+                state(config.cfg["heros"][myHostname]["next"])
+            return
+        if hostmqtt.topic_matches_sub(myHostname+"/remote/scan", message.topic):
+            item = payload["item"]
+            play(item)
+            return
+        if hostmqtt.topic_matches_sub(myHostname+"/rfid-nfc/scan", message.topic):
             # TODO: this needs re-writing to only convert from rfid tag to item, post to MQ
             # TODO: and then another even listens to item values on the MQ and converts to action
-            item = cfg["items"][payload]
-            print(myHostname+" got "+payload+" which is: "+item)
+            tag = payload["tag"]
+            item = config.cfg["items"][tag]
+            print(myHostname+" got "+tag+" which is: "+item)
 
             if item == "reset":
                 state("reset")
@@ -119,12 +131,12 @@ def on_message(client, userdata, message):
                     allMuted = True
                 return
 
-            if "heros" in cfg:
+            if "heros" in config.cfg:
                 print("hero for: "+myHostname)
 
-                if myHostname in cfg["heros"]:
-                    print(cfg["heros"][myHostname])
-                    heroItem = cfg["heros"][myHostname]["item"]
+                if myHostname in config.cfg["heros"]:
+                    print(config.cfg["heros"][myHostname])
+                    heroItem = config.cfg["heros"][myHostname]["item"]
                     print("podium "+myHostname+" hero is '"+heroItem+"' got '"+item+"'")
                     if item == "playhero":
                         #play the hero speech without changing the state
@@ -156,15 +168,16 @@ def on_message(client, userdata, message):
                             item = "hero_no"
 
             #if item == "sven" or item == "twinkle" or item == "letter", sweet, sour, salty
-            if "allowrepeats" in cfg:
-                if item in cfg["allowrepeats"]:
+            if "allowrepeats" in config.cfg:
+                if item in config.cfg["allowrepeats"]:
                     # don't do the no-repeat stuff here
                     play(item)
                     return
 
             if item in repeats:
                 repeats[item] = 1 + repeats[item]
-                client.publish("repeat/"+myHostname+"/"+item, repeats[item])
+                # not subscribed to atm
+                hostmqtt.publish("repeat", {"item": item, "repeat": repeats[item]})
 
                 if repeats[item] == 1:
                     item = "No_A"
@@ -178,35 +191,33 @@ def on_message(client, userdata, message):
             play(item)
             
             # neopixels
-            if "sparkles" in cfg:
-                if item == cfg["sparkles"]:
-                    client.publish("follyengine/"+myHostname+"/neopixel", item)
+            if "sparkles" in config.cfg:
+                if item == config.cfg["sparkles"]:
+                    hostmqtt.publish("neopixel", {"item": item})
 
     except Exception as e:
         print("Exception:")
-        print(e)
+        traceback.print_exc()
         return
 ########################################
 
-client = mqtt.Client(myHostname+"_controller") #create new instance
-client.on_message=on_message #attach function to callback
+# TODO: I'd like to make this implicit
+hostmqtt.set_on_message(on_message)
 
-print("Connecting to MQTT at: %s" % mqttHost)
-client.connect(mqttHost) #connect to broker
 
-client.subscribe("follyengine/"+myHostname+"/remote")
-client.subscribe("follyengine/"+myHostname+"/rfid")
-client.subscribe("status/"+myHostname+"/played")  # used for hero mute and state
+hostmqtt.subscribeL(myHostname, "remote", "scan")
+hostmqtt.subscribeL(myHostname, "rfid-nfc", "scan")
+hostmqtt.subscribeL(myHostname, "rfid-nfc", "removed")
+hostmqtt.subscribeL(myHostname, "audio", "played")
+hostmqtt.subscribeL("all", "state", "set")
 
-client.subscribe("follyengine/all/state")
+hostmqtt.publish("status", {"status": "listening"})
 
-client.publish("status/"+myHostname+"/controller","STARTED")
-publish.single("follyengine/"+myHostname+"/test", "test", hostname=mqttHost)
-state(cfg["start_state"])
+state(config.cfg["start_state"])
 
 try:
-    client.loop_forever()
+    hostmqtt.loop_forever()
 except KeyboardInterrupt:
     print("exit")
 
-client.publish("status/"+myHostname+"/controller","STOPPED")
+hostmqtt.publish("status",{"status": "STOPPED"})

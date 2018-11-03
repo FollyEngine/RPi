@@ -4,7 +4,7 @@ import time
 import sys
 import socket
 import pygame
-
+import traceback
 
 # the config and mqtt modules are in a bad place atm :/
 import sys
@@ -53,29 +53,37 @@ def play(audiofile):
         hostmqtt.publish("played", {"status": "played", "sound": audiofile})
     except Exception as e:
         print("Failed to play %s" % audioPath)
-        print("Exception:")
-        print(e)
+        traceback.print_exc()
 
 ############
 def on_message(client, userdata, message):
     global isMuted
-    payload=str(message.payload.decode("utf-8"))
-    print(message.topic+": "+payload)
-    #print("message received " ,payload)
-    #print("message topic=",message.topic)
-    #print("message qos=",message.qos)
-    #print("message retain flag=",message.retain)
+
     try:
+        raw_payload=str(message.payload.decode("utf-8"))
+        print("RAW: "+message.topic+": "+raw_payload)
+        if raw_payload == "" or raw_payload == "REMOVED" or raw_payload == "(null)":
+            return
+
+        payload = hostmqtt.decode(raw_payload)
+        print("DECODED: "+message.topic+": "+str(payload))
+        #print("message received " ,payload)
+        #print("message topic=",message.topic)
+        #print("message qos=",message.qos)
+        #print("message retain flag=",message.retain)
+
         if hostmqtt.topic_matches_sub("all/audio/play", message.topic) and payload != "":
             # everyone
-            print("everyone plays "+payload)
-            play(payload)
+            sound = payload["sound"]
+            print("everyone plays "+sound)
+            play(sound)
         elif hostmqtt.topic_matches_sub("all/audio/test", message.topic):
             print("everyone plays test.wav")
             play(testsound)
         elif hostmqtt.topic_matches_sub(myHostname+"/audio/play", message.topic) and payload != "":
-            print(myHostname+" plays "+payload)
-            play(payload)
+            sound = payload["sound"]
+            print(myHostname+" plays "+sound)
+            play(sound)
         elif hostmqtt.topic_matches_sub("all/audio/mute", message.topic) or hostmqtt.topic_matches_sub(myHostname+"/audio/mute", message.topic):
             isMuted = True
             print("muted")
@@ -87,8 +95,7 @@ def on_message(client, userdata, message):
             isMuted = False
             print("unmuted")
     except Exception as e:
-        print("Exception:")
-        print(e)
+        traceback.print_exc()
 
 ########################################
 

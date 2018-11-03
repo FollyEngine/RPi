@@ -51,6 +51,9 @@ class MQTT:
     def topic_matches_sub(self, sub, topic):
         return mqttclient.topic_matches_sub(sub, topic)
 
+    def decode(self, raw):
+        return json.loads(raw)
+
 #TODO: move this back into the class
 #TODO: this happens when a message failed to be sent - need to resend it..
 def on_disconnect(client, userdata,rc=0):
