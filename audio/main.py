@@ -88,8 +88,8 @@ def msg_unmute(topic, payload):
     isMuted = False
     print("unmuted")
 
-hostmqtt.subscribe("unmute", msg_mute)
-hostmqtt.subscribeL("all", DEVICENAME, "unmute", msg_mute)
+hostmqtt.subscribe("unmute", msg_unmute)
+hostmqtt.subscribeL("all", DEVICENAME, "unmute", msg_unmute)
 ########################################
 
 hostmqtt.publish("status", {"status": "listening"})

@@ -73,6 +73,11 @@ class MQTT:
 #hostmqtt.on_message(mqtt.client, '', a)
     def on_message(self, client, userdata, message):
         print("on_message %s" % message.topic)
+        #print("message received " ,payload)
+        #print("message topic=",message.topic)
+        #print("message qos=",message.qos)
+        #print("message retain flag=",message.retain)
+
         message_func = ""
         try:
             if message.topic in self.sub:
