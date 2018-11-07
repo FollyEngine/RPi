@@ -12,6 +12,11 @@ class MQTT:
         self.sub = {}
         self.connect()
 
+    def status(self, obj):
+        obj['device'] = self.devicename
+        global client
+        client.publish("%s/%s/%s" % (self.myhostname, self.devicename, 'status'), payload=json.dumps(obj), retain=True)
+
     def publishString(self, host, device, verb, message):
         global client
         client.publish("%s/%s/%s" % (host, device, verb), message)

@@ -90,7 +90,7 @@ if __name__ == '__main__':
     devices=[]
     for r in readers:
         devices.append("%s" % r)
-    hostmqtt.publish("status", {"status": "listening", "devices": devices})
+    hostmqtt.status({"status": "listening", "devices": devices})
     cardtype = AnyCardType()
 
     while True:
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     # monitor will poll forever...
     cardmonitor.deleteObserver(cardobserver)
 
-    hostmqtt.publish("status",{"status": "STOPPED"})
+    hostmqtt.status({"status": "STOPPED"})
 
     import sys
     if 'win32' == sys.platform:
