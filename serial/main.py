@@ -8,13 +8,12 @@ from time import sleep
 # for UHF RFID reader - the yellow one...
 
 def readreply(ser):
-    packet_type = ser.read(1)
-    print(packet_type)
+    p = ser.read(1)
     # assert(packet_type == 0xA0)
-    p = int.from_bytes(packet_type, byteorder="big")
-    print(p)
-    if p != 0:
-        print("type == %s" % format(p, '#04x'))
+    packet_type = int.from_bytes(p, byteorder="big")
+    print(packet_type)
+    if packet_type != 0:
+        print("type == %s" % format(packet_type, '#04x'))
 
         l = ser.read(1)
         length = int.from_bytes(l, byteorder="big")
@@ -29,7 +28,7 @@ def readreply(ser):
             crc = int.from_bytes(c, byteorder="big")
             print("READ: address = %s data == %s" % (format(address, '#04x'), format(data, '#04x')))
 
-            return data
+            return length, packet_type, data
     return "nothing"
 
 def CheckSum(uBuff, uBuffLen):
@@ -153,7 +152,7 @@ with serial.Serial(
         # get version
         print("get Version")
         writeCommand(ser_connection, publicAddress, cmd_get_firmware_version)
-        v = readreply(ser_connection)
+        l, t, v = readreply(ser_connection)
         print(v)
 
 #        print("get antenna")
@@ -190,14 +189,18 @@ with serial.Serial(
 #        rf_link_profile = readreply(ser_connection)
 #        print(rf_link_profile)   # 1 byte
 
-        print("cmd_real_time_inventory")
+        print("------------------------------------- cmd_real_time_inventory")
         writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
         while True:
-            tag_data = readreply(ser_connection)
+            length, packet_type, data = readreply(ser_connection)
             # note that there are at least 2 different replies
             ## the response packet, and the tag info..
-            print("read : 0x%x" % tag_data)
+            print("read : 0x%x" % data)
 
             # TODO: will get a 10 byte length response code after the timeout
             # presumably, you then set go again...
+            if length == 10:
+                print("------------------------------------- cmd_real_time_inventory")
+                writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+
 
