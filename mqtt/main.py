@@ -22,7 +22,6 @@ myHostname = config.getValue("hostname", socket.gethostname())
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, "relay_from")
 
 master_mqtt_host = config.getValue("mqttmaster", "mqtt.thegame.folly.site")
-#mastermqtt = mqtt.MQTT(master_mqtt_host, myHostname, "relay_to", "everyone", "S4C7Tzjc2gD92y9", 80, "websockets")
 mastermqtt = mqtt.MQTT(master_mqtt_host, myHostname, "relay_to", "everyone", "S4C7Tzjc2gD92y9", 8883)
 
 # end load config
@@ -39,6 +38,9 @@ def relay_message_to_master(topic, payload):
     if not "relay_from" in payload:
         payload["relay_from"] = myHostname
         mastermqtt.relay(topic, payload)
+    else:
+        print("relayed before "+payload["relay_from"])
+
 
 def relay_message_from_master(topic, payload):
     # Only relay messages from our local mqtt to the global one if they havn't already been relayed
@@ -54,7 +56,8 @@ def relay_message_from_master(topic, payload):
 ########################################
 
 
-hostmqtt.subscribeL("+", "status", "+", relay_message_to_master)
+hostmqtt.subscribeL("+", "+", "+", relay_message_to_master)
+print(hostmqtt.sub)
 mastermqtt.subscribeL("+", "+", "+", relay_message_from_master)
 
 hostmqtt.status({"status": "listening"})

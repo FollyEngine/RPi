@@ -20,8 +20,7 @@ class MQTT:
     def status(self, obj):
         obj['device'] = self.devicename
         obj['time'] = datetime.datetime.now().isoformat()
-        global client
-        client.publish("%s/%s/%s" % (self.myhostname, self.devicename, 'status'), payload=json.dumps(obj), retain=True)
+        self.client.publish("%s/%s/%s" % (self.myhostname, self.devicename, 'status'), payload=json.dumps(obj), retain=True)
 
     # used to publish messages to other devices directly, or to `all`
     def publishL(self, host, device, verb, obj):
@@ -37,12 +36,11 @@ class MQTT:
     # used to relay a message from one mqtt broker to another
     # so don't overwrite device and time...
     def relay(self, verb, obj):
-        self.publishStringRaw(self.myhostname, self.devicename, verb, json.dumps(obj))
+        self.client.publish(verb, json.dumps(obj))
 
     def subscribeL(self, host, device, verb, function=""):
-        global client
         sub_topic = "%s/%s/%s" % (host, device, verb)
-        client.subscribe(sub_topic)
+        self.client.subscribe(sub_topic)
         print("Subscribed to %s" % sub_topic)
         self.sub[sub_topic] = function
 
@@ -52,30 +50,26 @@ class MQTT:
 
     ############################## internal
     def publishStringRaw(self, host, device, verb, message):
-        global client
-        client.publish("%s/%s/%s" % (host, device, verb), message)
+        self.client.publish("%s/%s/%s" % (host, device, verb), message)
 
     def connect(self):
-        global client
         #TODO: can we ask what clients are connected and detect collisions?
         clientname="%s_%s" % (self.myhostname, self.devicename)
-        client = mqttclient.Client(client_id=clientname, transport=self.transport)
+        self.client = mqttclient.Client(client_id=clientname, transport=self.transport)
         if self.username != "":
-            client.username_pw_set(self.username, self.password)
+            self.client.username_pw_set(self.username, self.password)
         #client.on_message=on_message #attach function to callback
-        client.on_disconnect = self.on_disconnect
-        client.on_connect = self.on_connect
+        self.client.on_disconnect = self.on_disconnect
+        self.client.on_connect = self.on_connect
         self.set_on_message(self.on_message)
         print("Connecting to MQTT as %s at: %s" % (clientname, self.mqtthostname))
-        client.connect(self.mqtthostname, self.port)
+        self.client.connect(self.mqtthostname, self.port)
 
     def set_on_message(self, on_message):
-        global client
-        client.on_message=on_message #attach function to callback
+        self.client.on_message=on_message #attach function to callback
 
     def loop_forever(self):
-        global client
-        client.loop_forever()
+        self.client.loop_forever()
 
     def topic_matches_sub(self, sub, topic):
         return mqttclient.topic_matches_sub(sub, topic)
@@ -89,8 +83,8 @@ class MQTT:
     #TODO: this happens when a message failed to be sent - need to resend it..
     def on_disconnect(self, innerclient, userdata,rc=0):
         print("DisConnected result code "+str(rc))
-        client.reconnect()
-        client.publish("status", {"status": "reconnecting"})
+        self.client.reconnect()
+        self.client.publish("status", {"status": "reconnecting"})
 
 #class Object(object):
 #    pass
@@ -112,12 +106,13 @@ class MQTT:
                 #print("direct")
             else:
                 for t in self.sub:
+                    #print("topic_matches_sub(%s, %s)" % (t, message.topic))
                     if self.topic_matches_sub(t, message.topic):
                         message_func = self.sub[t]
                         #print("match")
                         break
 
-            print(message_func)
+            #print(message_func)
             if message_func == "":
                 print("No message_func found for %s" % message.topic)
                 return
