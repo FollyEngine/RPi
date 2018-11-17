@@ -110,11 +110,11 @@ if __name__ == '__main__':
             print("exit")
             break
 
+    hostmqtt.status({"status": "STOPPED"})
+
     # don't forget to remove observer, or the
     # monitor will poll forever...
     cardmonitor.deleteObserver(cardobserver)
-
-    hostmqtt.status({"status": "STOPPED"})
 
     import sys
     if 'win32' == sys.platform:

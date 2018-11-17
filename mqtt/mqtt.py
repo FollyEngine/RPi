@@ -36,7 +36,11 @@ class MQTT:
     # used to relay a message from one mqtt broker to another
     # so don't overwrite device and time...
     def relay(self, verb, obj):
-        self.client.publish(verb, json.dumps(obj))
+        retain = False
+        if self.topic_matches_sub("+/+/status", verb):
+            print("Retain: %s" % verb)
+            retain = True
+        self.client.publish(verb, json.dumps(obj), retain=retain)
 
     def subscribeL(self, host, device, verb, function=""):
         sub_topic = "%s/%s/%s" % (host, device, verb)
