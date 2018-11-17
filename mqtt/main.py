@@ -35,11 +35,13 @@ def muteAll():
 
 def relay_message_to_master(topic, payload):
     # Only relay messages from our local mqtt to the global one if they havn't already been relayed
-    if not "relay_from" in payload:
-        payload["relay_from"] = myHostname
-        mastermqtt.relay(topic, payload)
-    else:
-        print("relayed before "+payload["relay_from"])
+    if "relay_from" in payload:
+        #print("relayed before "+payload["relay_from"])
+        return
+
+    payload["relay_from"] = myHostname
+    print("Relaying to master: %s, %s" % (topic, payload))
+    mastermqtt.relay(topic, payload)
 
 
 def relay_message_from_master(topic, payload):
@@ -51,7 +53,8 @@ def relay_message_from_master(topic, payload):
             # don't relay a message that originated with us...
             return
 
-    mastermqtt.relay(topic, payload)
+    print("Relaying from master: %s, %s" % (topic, payload))
+    hostmqtt.relay(topic, payload)
 
 ########################################
 

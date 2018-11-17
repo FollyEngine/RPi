@@ -93,7 +93,7 @@ class MQTT:
 #a.payload = '{"sound": "'+testsound+'"}'
 #hostmqtt.on_message(mqtt.client, '', a)
     def on_message(self, client, userdata, message):
-        print("on_message %s" % message.topic)
+        #print("on_message %s" % message.topic)
         #print("message received " ,payload)
         #print("message topic=",message.topic)
         #print("message qos=",message.qos)
