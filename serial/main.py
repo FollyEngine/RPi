@@ -36,13 +36,6 @@ def CheckSum(uBuff, uBuffLen):
     s=sum(uBuff[0:uBuffLen])
     print(bytearray([s]))
 
-    #uSum=bytearray(1)
-    #for i in range(0, uBuffLen):
-    #    uSum[0] = uSum[0] + uBuff[i]
-    #uSum[0] = ~(uSum[0]) + 0x01
-    #print(uSum[0])
-    #return uSum[0]
-
     crc=((~sum(uBuff[0:uBuffLen])) & 0xFF)
     print(crc)
     return crc
@@ -84,7 +77,6 @@ def writeCommand(ser, address, cmd, data_len=0, data=0x00):
     crc = (1 << 8) - sum(bytearray([0xA0, 0x03, address, cmd])) & 0xff
     print("crc: 0x%02x" % crc)
     packet[length+1] = crc
-#    packet[4] = crc
     print(packet)
     ser.write(packet)
 
@@ -161,33 +153,34 @@ with serial.Serial(
 #        a = readreply(ser_connection)
 #        print(a)   # one byte
 
-#        print("get cmd_get_output_power")
-#        # get the current antenna power
-#        writeCommand(ser_connection, publicAddress, cmd_get_output_power)
-#        p = readreply(ser_connection)
-#        print(p)   # 4 bytes - range 0 to 0x21 in dBm
+        print("get cmd_get_output_power")
+        # get the current antenna power
+        writeCommand(ser_connection, publicAddress, cmd_get_output_power)
+        p = readreply(ser_connection)
+        print(p)   # 4 bytes - range 0 to 0x21 in dBm
 
-#        print("get cmd_get_frequency_region")
-#        # get the frequency region
-#        writeCommand(ser_connection, publicAddress, cmd_get_frequency_region)
-#        f = readreply(ser_connection)
-#        print(f)   # can be 3 bytes if region based, or 7 bytes if user defined.
+        print("get cmd_get_frequency_region")
+        # get the frequency region
+        writeCommand(ser_connection, publicAddress, cmd_get_frequency_region)
+        f = readreply(ser_connection)
+        print(f)   # can be 3 bytes if region based, or 7 bytes if user defined.
 
-#        # get reader temperature
-#        writeCommand(ser_connection, publicAddress, cmd_get_reader_temperature)
-#        t = readreply(ser_connection)
-#        print(t)   # 2 bytes first is plus/minus, second is value in c
+        # print("get cmd_get_reader_temperature")
+        # # get reader temperature
+        # writeCommand(ser_connection, publicAddress, cmd_get_reader_temperature)
+        # t = readreply(ser_connection)
+        # print(t)   # 2 bytes first is plus/minus, second is value in c
 
-#        print(" get reader id")
-#        # get reader id
-#        writeCommand(ser_connection, publicAddress, cmd_get_reader_identifier)
-#        id = readreply(ser_connection)
-#        print(id)   # 12 bytes
+        # print(" get reader id")
+        # # get reader id
+        # writeCommand(ser_connection, publicAddress, cmd_get_reader_identifier)
+        # id = readreply(ser_connection)
+        # print(id)   # 12 bytes
 
-#        # get reader rf link profile
-#        writeCommand(ser_connection, publicAddress, cmd_get_rf_link_profile)
-#        rf_link_profile = readreply(ser_connection)
-#        print(rf_link_profile)   # 1 byte
+        # # get reader rf link profile
+        # writeCommand(ser_connection, publicAddress, cmd_get_rf_link_profile)
+        # rf_link_profile = readreply(ser_connection)
+        # print(rf_link_profile)   # 1 byte
 
         print("------------------------------------- cmd_real_time_inventory")
         writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
