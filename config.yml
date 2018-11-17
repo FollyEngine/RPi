@@ -1,6 +1,6 @@
 
 # set this on the usb stick for each pillar
-hostname: Podium5
+#hostname: Podium5
 start_state: Podium5
 sounddir: "/home/sven/src/follyengine/convictshope/"
 testsound: "/usr/share/scratch/Media/Sounds/Effects/Bubbles.wav"
