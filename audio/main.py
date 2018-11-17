@@ -92,8 +92,7 @@ hostmqtt.subscribe("unmute", msg_unmute)
 hostmqtt.subscribeL("all", DEVICENAME, "unmute", msg_unmute)
 ########################################
 
-hostmqtt.publish("status", {"status": "listening"})
-
+hostmqtt.status({"status": "listening"})
 
 # trigger a play...
 play(testsound)
@@ -103,4 +102,4 @@ try:
 except KeyboardInterrupt:
     print("exit")
 
-hostmqtt.publish("status",{"status": "STOPPED"})
+hostmqtt.status({"status": "STOPPED"})

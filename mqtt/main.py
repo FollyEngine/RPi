@@ -53,16 +53,15 @@ def relay_message_from_master(topic, payload):
 
 ########################################
 
+
 hostmqtt.subscribeL("+", "status", "+", relay_message_to_master)
 mastermqtt.subscribeL("+", "+", "+", relay_message_from_master)
 
-
-hostmqtt.publish("status", {"status": "listening"})
-
+hostmqtt.status({"status": "listening"})
 
 try:
     hostmqtt.loop_forever()
 except KeyboardInterrupt:
     print("exit")
 
-hostmqtt.publish("status",{"status": "STOPPED"})
+hostmqtt.status({"status": "STOPPED"})

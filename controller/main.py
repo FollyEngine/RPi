@@ -187,7 +187,7 @@ hostmqtt.subscribeL(myHostname, "rfid-nfc", "scan", msg_rfid_scan)
 hostmqtt.subscribeL(myHostname, "audio", "played", msg_audio_played)
 hostmqtt.subscribeL("all", "state", "set", msg_state_set)
 
-hostmqtt.publish("status", {"status": "listening"})
+hostmqtt.status({"status": "listening"})
 
 state(config.cfg["start_state"])
 
@@ -196,4 +196,4 @@ try:
 except KeyboardInterrupt:
     print("exit")
 
-hostmqtt.publish("status",{"status": "STOPPED"})
+hostmqtt.status({"status": "STOPPED"})
