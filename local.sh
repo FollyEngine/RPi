@@ -26,6 +26,10 @@ if [[ ¨$1¨ != ¨--setup¨ ]]; then
 	sleep 15
 	ping -c 1 $MQTTHOST
 
+	# relay to folly.site
+	python3 mqtt/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
+
+
 	python3 rfid/main.py $CONFIGFILE > rfid-${DATE}.log 2>&1 &
 	python3 audio/main.py $CONFIGFILE > audio-${DATE}.log 2>&1 &
 	python3 controller/main.py $CONFIGFILE > controller-${DATE}.log 2>&1 &
