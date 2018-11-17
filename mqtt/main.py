@@ -34,13 +34,28 @@ def muteAll():
 ########################################################
 # subscription handlers
 
-def relay_message(topic, payload):
-    # TODO: need to add a "relayed from X message, so we don't make a relay loop"
-    mastermqtt.publish(topic, payload)
+def relay_message_to_master(topic, payload):
+    # Only relay messages from our local mqtt to the global one if they havn't already been relayed
+    if not "relay_from" in payload:
+        payload["relay_from"] = myHostname
+        mastermqtt.relay(topic, payload)
+
+def relay_message_from_master(topic, payload):
+    # Only relay messages from our local mqtt to the global one if they havn't already been relayed
+    if not "relay_from" in payload:
+        payload["relay_from"] = master_mqtt_host
+    else:
+        if payload["relay_from"] == myHostname:
+            # don't relay a message that originated with us...
+            return
+
+    mastermqtt.relay(topic, payload)
 
 ########################################
 
-hostmqtt.subscribeL("+", "status", "+", relay_message)
+hostmqtt.subscribeL("+", "status", "+", relay_message_to_master)
+mastermqtt.subscribeL("+", "+", "+", relay_message_from_master)
+
 
 hostmqtt.publish("status", {"status": "listening"})
 

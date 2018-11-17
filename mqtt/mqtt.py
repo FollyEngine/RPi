@@ -34,6 +34,11 @@ class MQTT:
         obj['time'] = datetime.datetime.now().isoformat()
         self.publishStringRaw(self.myhostname, self.devicename, verb, json.dumps(obj))
 
+    # used to relay a message from one mqtt broker to another
+    # so don't overwrite device and time...
+    def relay(self, verb, obj):
+        self.publishStringRaw(self.myhostname, self.devicename, verb, json.dumps(obj))
+
     def subscribeL(self, host, device, verb, function=""):
         global client
         sub_topic = "%s/%s/%s" % (host, device, verb)
@@ -104,28 +109,27 @@ class MQTT:
         try:
             if message.topic in self.sub:
                 message_func = self.sub[message.topic]
-                print("direct")
+                #print("direct")
             else:
                 for t in self.sub:
                     if self.topic_matches_sub(t, message.topic):
                         message_func = self.sub[t]
-                        print("match")
+                        #print("match")
                         break
 
-            print("asd")
             print(message_func)
             if message_func == "":
                 print("No message_func found for %s" % message.topic)
                 return
 
             raw_payload=str(message.payload.decode("utf-8"))
-            print("HHRAW: "+message.topic+": "+raw_payload)
+            #print("HHRAW: "+message.topic+": "+raw_payload)
 
             if raw_payload == "" or raw_payload == "REMOVED" or raw_payload == "(null)":
                 return
 
             payload = self.decode(raw_payload)
-            print("DECODED: "+message.topic+": "+str(payload))
+            #print("DECODED: "+message.topic+": "+str(payload))
             message_func(message.topic, payload)
         except Exception as e:
             print("exception:")
