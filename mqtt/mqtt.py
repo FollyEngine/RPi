@@ -1,6 +1,7 @@
 
 
 import paho.mqtt.client as mqttclient
+import datetime
 import json
 import traceback
 
@@ -18,20 +19,20 @@ class MQTT:
 
     def status(self, obj):
         obj['device'] = self.devicename
+        obj['time'] = datetime.datetime.now().isoformat()
         global client
         client.publish("%s/%s/%s" % (self.myhostname, self.devicename, 'status'), payload=json.dumps(obj), retain=True)
 
-    def publishString(self, host, device, verb, message):
-        global client
-        client.publish("%s/%s/%s" % (host, device, verb), message)
-
+    # used to publish messages to other devices directly, or to `all`
     def publishL(self, host, device, verb, obj):
         obj['device'] = self.devicename
-        self.publishString(host, device, verb, json.dumps(obj))
+        obj['time'] = datetime.datetime.now().isoformat()
+        self.publishStringRaw(host, device, verb, json.dumps(obj))
 
     def publish(self, verb, obj):
         obj['device'] = self.devicename
-        self.publishString(self.myhostname, self.devicename, verb, json.dumps(obj))
+        obj['time'] = datetime.datetime.now().isoformat()
+        self.publishStringRaw(self.myhostname, self.devicename, verb, json.dumps(obj))
 
     def subscribeL(self, host, device, verb, function=""):
         global client
@@ -42,6 +43,12 @@ class MQTT:
 
     def subscribe(self, verb, function=""):
         self.subscribeL(self.myhostname, self.devicename, verb, function)
+
+
+    ############################## internal
+    def publishStringRaw(self, host, device, verb, message):
+        global client
+        client.publish("%s/%s/%s" % (host, device, verb), message)
 
     def connect(self):
         global client
