@@ -8,7 +8,7 @@ import traceback
 
 # the config and mqtt modules are in a bad place atm :/
 import sys
-sys.path.append('./rfid/')
+sys.path.append('./mqtt/')
 import config
 import mqtt
 

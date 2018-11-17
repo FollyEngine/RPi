@@ -25,9 +25,11 @@ import json
 import socket
 
 
-#new libs
-import mqtt
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./mqtt/')
 import config
+import mqtt
 
 GETUID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
 

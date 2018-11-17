@@ -5,10 +5,14 @@ import json
 import traceback
 
 class MQTT:
-    def __init__(self, mqtthostname, myhostname, devicename):
+    def __init__(self, mqtthostname, myhostname, devicename, username="", password="", port=1883, transport="tcp"):
         self.mqtthostname = mqtthostname
+        self.port = port
+        self.transport = transport
         self.myhostname = myhostname
         self.devicename = devicename
+        self.username = username
+        self.password = password
         self.sub = {}
         self.connect()
 
@@ -43,12 +47,15 @@ class MQTT:
         global client
         #TODO: can we ask what clients are connected and detect collisions?
         clientname="%s_%s" % (self.myhostname, self.devicename)
-        client = mqttclient.Client(clientname)
+        client = mqttclient.Client(client_id=clientname, transport=self.transport)
+        if self.username != "":
+            client.username_pw_set(self.username, self.password)
         #client.on_message=on_message #attach function to callback
-        client.on_disconnect=self.on_disconnect
+        client.on_disconnect = self.on_disconnect
+        client.on_connect = self.on_connect
         self.set_on_message(self.on_message)
         print("Connecting to MQTT as %s at: %s" % (clientname, self.mqtthostname))
-        client.connect(self.mqtthostname)
+        client.connect(self.mqtthostname, self.port)
 
     def set_on_message(self, on_message):
         global client
@@ -63,6 +70,9 @@ class MQTT:
 
     def decode(self, raw):
         return json.loads(raw)
+
+    def on_connect(self, client, userdata, flags, rc):
+        print("Connection returned result: "+connack_string(rc))
 
     #TODO: this happens when a message failed to be sent - need to resend it..
     def on_disconnect(self, innerclient, userdata,rc=0):
