@@ -1,11 +1,26 @@
 #!/usr/bin/python3
 
-#OMG https://lo.calho.st/projects/the-fruits-of-some-recent-arduino-mischief/
-
 import serial
 from time import sleep
+import socket
+
 
 # for UHF RFID reader - the yellow one...
+# D-10X
+
+
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./mqtt/')
+import mqtt
+import config
+import datetime
+
+mqttHost = config.getValue("mqtthostname", "mqtt")
+myHostname = config.getValue("hostname", socket.gethostname())
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, "yellow-rfid")
+
+########################################
 
 def readreply(ser):
     p = ser.read(1)
@@ -30,6 +45,37 @@ def readreply(ser):
 
             return length, packet_type, data
     return "nothing"
+
+def read_reply_real_time_inventory(ser):
+    length, packet_type, data = readreply(ser_connection)
+    if packet_type != 160:
+        #big error
+        return length, packet_type, data
+    if len == 4:
+        # failed to set to real time inventory
+        throw# {"Error": "Failed to set to real time inventory"}
+    if len == 10:
+        #succeeded in reading a bunch
+        # data contains read rate and total number read
+        return length, packet_type, data
+    hexData = "%x" % data #format(data, '#04x')
+    FreqAnt = hexData[0:2]
+    TagPC = hexData[2:4]
+    EPC = hexData[4:-2]
+    rssi = hexData[-2:]
+    event = {
+        #'data': "%x" % data,
+        #'packet_type': packet_type,
+        "FreqAnt": FreqAnt,
+        "TagPC": TagPC,
+        "EPC": EPC,
+        "RSSI": rssi,
+        'event': 'inserted'
+    }
+    hostmqtt.publish("scan", event)
+    return length, packet_type, data
+
+
 
 def CheckSum(uBuff, uBuffLen):
     s=bytearray(1)
@@ -116,6 +162,29 @@ cmd_set_impinj_fast_tid = 0x8C #Set impinj FastTID function.  #(Without saving t
 cmd_set_and_save_impinj_fast_tid = 0x8D #Set impinj FastTID function.  #(Save to FLASH)
 cmd_get_impinj_fast_tid = 0x8E #Get current FastTID setting.
 
+########################################
+def status(ser_connection):
+
+    # get version
+    writeCommand(ser_connection, publicAddress, cmd_get_firmware_version)
+    l, t, v = readreply(ser_connection)
+    # get the current antenna power
+    writeCommand(ser_connection, publicAddress, cmd_get_output_power)
+    p = readreply(ser_connection)  # 4 bytes - range 0 to 0x21 in dBm
+    # get the frequency region
+    writeCommand(ser_connection, publicAddress, cmd_get_frequency_region)
+    region = readreply(ser_connection) # can be 3 bytes if region based, or 7 bytes if user defined.
+
+
+    hostmqtt.status({
+        "version": v,
+        "power": p,
+        "model": "desktop uhf rfid (D-10X)",
+        "region": region,
+        "status": "listening"})
+########################################
+
+
 
 publicAddress = 0x01
 
@@ -124,76 +193,91 @@ publicAddress = 0x01
 #The baud rate can be set to 38400bps or 115200bps. The default baud rate is 115200bps
 baudrate = 115200    # 38400 or 115200
 with serial.Serial(
-        '/dev/ttyUSB0', 
-        timeout=None, 
-        baudrate=baudrate, 
-        bytesize=serial.EIGHTBITS, 
-        parity=serial.PARITY_NONE, 
-        stopbits=serial.STOPBITS_ONE,
-        xonxoff=0, #disable software flow control
-        rtscts=0, #disable hardware (RTS/CTS) flow control
-        dsrdtr=0, #disable hardware (DSR/DTR) flow control
-    ) as ser_connection:
-    #try:
-        # reset.
+            '/dev/ttyUSB0', 
+            timeout=None, 
+            baudrate=baudrate, 
+            bytesize=serial.EIGHTBITS, 
+            parity=serial.PARITY_NONE, 
+            stopbits=serial.STOPBITS_ONE,
+            xonxoff=0, #disable software flow control
+            rtscts=0, #disable hardware (RTS/CTS) flow control
+            dsrdtr=0, #disable hardware (DSR/DTR) flow control
+        ) as ser_connection:
+    try:
+            # reset.
+            print("Send Reset")
+            #writeCommand(ser_connection, publicAddress, cmd_reset)
+            writeReset(ser_connection, publicAddress, cmd_reset)
+            sleep(1)
+
+            # get version
+            print("get Version")
+            writeCommand(ser_connection, publicAddress, cmd_get_firmware_version)
+            l, t, v = readreply(ser_connection)
+            print(v)
+
+    #        print("get antenna")
+    #        # get the current working antenna
+    #        writeCommand(ser_connection, publicAddress, cmd_get_work_antenna)
+    #        a = readreply(ser_connection)
+    #        print(a)   # one byte
+
+            print("get cmd_get_output_power")
+            # get the current antenna power
+            writeCommand(ser_connection, publicAddress, cmd_get_output_power)
+            p = readreply(ser_connection)
+            print(p)   # 4 bytes - range 0 to 0x21 in dBm
+
+            print("get cmd_get_frequency_region")
+            # get the frequency region
+            writeCommand(ser_connection, publicAddress, cmd_get_frequency_region)
+            f = readreply(ser_connection)
+            print(f)   # can be 3 bytes if region based, or 7 bytes if user defined.
+
+            # print("get cmd_get_reader_temperature")
+            # # get reader temperature
+            # writeCommand(ser_connection, publicAddress, cmd_get_reader_temperature)
+            # t = readreply(ser_connection)
+            # print(t)   # 2 bytes first is plus/minus, second is value in c
+
+            # print(" get reader id")
+            # # get reader id
+            # writeCommand(ser_connection, publicAddress, cmd_get_reader_identifier)
+            # id = readreply(ser_connection)
+            # print(id)   # 12 bytes
+
+            # # get reader rf link profile
+            # writeCommand(ser_connection, publicAddress, cmd_get_rf_link_profile)
+            # rf_link_profile = readreply(ser_connection)
+            # print(rf_link_profile)   # 1 byte
+
+            lastStatus = datetime.datetime.now()
+            status(ser_connection)
+
+            print("------------------------------------- cmd_real_time_inventory")
+            writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+
+            while True:
+                if datetime.timedelta.total_seconds(datetime.datetime.now()-lastStatus) > (2*60):
+                    status(ser_connection)
+                    lastStatus = datetime.datetime.now()
+
+                length, packet_type, data = read_reply_real_time_inventory(ser_connection)
+                # note that there are at least 2 different replies
+                ## the response packet, and the tag info..
+                print("read : 0x%x" % data)
+
+                # TODO: will get a 10 byte length response code after the timeout
+                # presumably, you then set go again...
+                if length == 10:
+                    print("------------------------------------- cmd_real_time_inventory")
+                    writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+    except KeyboardInterrupt:
+        print("exit")
         print("Send Reset")
         #writeCommand(ser_connection, publicAddress, cmd_reset)
         writeReset(ser_connection, publicAddress, cmd_reset)
         sleep(1)
+    
 
-        # get version
-        print("get Version")
-        writeCommand(ser_connection, publicAddress, cmd_get_firmware_version)
-        l, t, v = readreply(ser_connection)
-        print(v)
-
-#        print("get antenna")
-#        # get the current working antenna
-#        writeCommand(ser_connection, publicAddress, cmd_get_work_antenna)
-#        a = readreply(ser_connection)
-#        print(a)   # one byte
-
-        print("get cmd_get_output_power")
-        # get the current antenna power
-        writeCommand(ser_connection, publicAddress, cmd_get_output_power)
-        p = readreply(ser_connection)
-        print(p)   # 4 bytes - range 0 to 0x21 in dBm
-
-        print("get cmd_get_frequency_region")
-        # get the frequency region
-        writeCommand(ser_connection, publicAddress, cmd_get_frequency_region)
-        f = readreply(ser_connection)
-        print(f)   # can be 3 bytes if region based, or 7 bytes if user defined.
-
-        # print("get cmd_get_reader_temperature")
-        # # get reader temperature
-        # writeCommand(ser_connection, publicAddress, cmd_get_reader_temperature)
-        # t = readreply(ser_connection)
-        # print(t)   # 2 bytes first is plus/minus, second is value in c
-
-        # print(" get reader id")
-        # # get reader id
-        # writeCommand(ser_connection, publicAddress, cmd_get_reader_identifier)
-        # id = readreply(ser_connection)
-        # print(id)   # 12 bytes
-
-        # # get reader rf link profile
-        # writeCommand(ser_connection, publicAddress, cmd_get_rf_link_profile)
-        # rf_link_profile = readreply(ser_connection)
-        # print(rf_link_profile)   # 1 byte
-
-        print("------------------------------------- cmd_real_time_inventory")
-        writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
-        while True:
-            length, packet_type, data = readreply(ser_connection)
-            # note that there are at least 2 different replies
-            ## the response packet, and the tag info..
-            print("read : 0x%x" % data)
-
-            # TODO: will get a 10 byte length response code after the timeout
-            # presumably, you then set go again...
-            if length == 10:
-                print("------------------------------------- cmd_real_time_inventory")
-                writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
-
-
+hostmqtt.status({"status": "STOPPED"})
