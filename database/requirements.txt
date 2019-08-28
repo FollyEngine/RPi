@@ -1,3 +1,0 @@
-peewee
-pyyaml
-paho-mqtt
