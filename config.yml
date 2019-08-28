@@ -45,6 +45,8 @@ deployments:
     crickit:
       type: crickit
 hosts:
+  pi4:
+    type: megagame
   one:
     type: megagame
   two:

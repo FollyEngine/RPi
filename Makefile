@@ -1,14 +1,9 @@
 .PHONY: audio
 
-RFIDIMAGE="realengine/rfid"
+HUBORG="follyengine"
+
+RFIDIMAGE="$(HUBORG)/rfid"
 ID:=$(shell id -u)
-
-stack: build
-	docker stack up -c mq_net.yml mq
-	docker stack up -c mq_server.yml mqs
-
-mq_ping:
-	docker run --rm -it --network mq_net mosquitto-clients mosquitto_pub -h mqs_server  -t 'play/test' -m 'test'
 
 audio:
 	docker run -it \
@@ -36,9 +31,7 @@ shell:
 	docker run --rm -it  --privileged -v /dev/bus/usb:/dev/bus/usb $(RFIDIMAGE) bash
 
 build:
-	docker build -t mosquitto-clients mosquitto-clients
-	docker build -t $(RFIDIMAGE) rfid
-	docker build -t audio audio
+	docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 --pull --push -t $(HUBORG)/base .
 
 push:
 	docker push ${RFIDIMAGE}
