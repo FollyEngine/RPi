@@ -4,6 +4,7 @@ HUBORG="follyengine"
 
 RFIDIMAGE="$(HUBORG)/rfid"
 ID:=$(shell id -u)
+PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6"
 
 audio:
 	docker run -it \
@@ -31,7 +32,8 @@ shell:
 	docker run --rm -it  --privileged -v /dev/bus/usb:/dev/bus/usb $(RFIDIMAGE) bash
 
 build:
-	docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 --pull --push -t $(HUBORG)/base .
+	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/base -f Dockerfile.base .
+	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/neopixels -f Dockerfile.neopixels .
 
 push:
 	docker push ${RFIDIMAGE}

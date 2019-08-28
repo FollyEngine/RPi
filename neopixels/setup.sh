@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-sudo pip install --no-cache-dir -r ./src/RPi/neopixels/requirements.txt
 sudo pip3 install --no-cache-dir -r ./src/RPi/neopixels/requirements.txt
 
 cd
@@ -18,9 +17,7 @@ sudo apt-get install -yq scons gcc
 scons
 
 cd python
-sudo apt-get install -yq python3-dev swig python-dev
-python ./setup.py build
-sudo python ./setup.py install
+sudo apt-get install -yq python3-dev swig
 
 python3 ./setup.py build
 sudo python3 ./setup.py install

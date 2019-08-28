@@ -1,0 +1,8 @@
+FROM follyengine/base
+
+
+# # neopixels
+COPY neopixels /src/neopixels/
+RUN /src/neopixels/setup.sh
+
+CMD /src/neopixels/main.py
