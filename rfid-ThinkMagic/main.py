@@ -1,0 +1,111 @@
+#!/usr/bin/python3
+# python 2 gets a seg fault after one read, python 3 reads a few times...
+# need to figure out an alternative
+
+
+import paho.mqtt.client as mqtt #import the client1
+import paho.mqtt.publish as publish
+import time
+import sys
+import socket
+import logging
+
+allMuted = False
+repeats = {}
+
+
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./mqtt/')
+import mqtt
+import config
+import datetime
+
+myHostname = config.getHostname()
+deploymenttype=config.getDeploymentType()
+DEVICENAME=config.getDevicename()
+
+mqttHost = config.getValue("mqtthostname", "localhost")
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
+hostmqtt.loop_start()
+
+# see https://github.com/gotthardp/python-mercuryapi
+import mercury
+
+# end load config
+
+########################################
+lastRead = {}
+def rfidTagDataCallback(rfid):
+    try:
+        #if rfid.epc.hex() in lastRead:
+        if rfid.epc in lastRead:
+            if datetime.timedelta.total_seconds(datetime.datetime.now()-lastRead[rfid.epc]) < (1):
+                #lets only report each tag once a second
+                return
+
+        lastRead[rfid.epc] = datetime.datetime.now()
+        event = {
+            'atr': rfid.epc_mem_data,
+            'tag': str(rfid.epc),
+            'rssi': rfid.rssi,
+            'event': 'inserted'
+        }
+        hostmqtt.publish("scan", event)
+
+        logging.info("EPC: %s RSSI: %s\n" % (rfid.epc, rfid.rssi))
+        #logging.info("     epc_mem_data: %s" % rfid.epc_mem_data)
+        #logging.info("     tid_mem_data: %s" % rfid.tid_mem_data)
+        #logging.info("     user_mem_data: %s" % rfid.user_mem_data)
+        #logging.info("     reserved_mem_data: %s" % rfid.reserved_mem_data)
+    except Exception as ex:
+        logging.error("Exception occurred", exc_info=True)
+
+
+########################################
+def status():
+    hostmqtt.status({
+        "model": reader.get_model(),
+        "region": "AU",
+        #"temp": reader.get_temperature(),
+        "power_range": reader.get_power_range(),
+        "antennas": reader.get_antennas(),
+#        "power": reader.get_read_powers(),
+        "status": "listening"})
+
+########################################
+
+reader = mercury.Reader("tmr:///dev/ttyACM0")
+
+reader.set_region("AU")
+reader.set_read_plan([1], "GEN2")
+
+# min power == 1800?
+# max power == 2700
+reader.set_read_powers([1], [2700])
+
+#using this causes the python to hang
+#reader.set_read_plan([1], "GEN2", bank=["reserved"], read_power=2700)
+
+lastStatus = datetime.datetime.now()
+status()
+reader.start_reading(rfidTagDataCallback, on_time=100, off_time=0)
+
+
+while True:
+    if datetime.timedelta.total_seconds(datetime.datetime.now()-lastStatus) > (2*60):
+        status()
+        lastStatus = datetime.datetime.now()
+    try:
+        time.sleep(1)
+        logging.info(".")
+        #logging.info(reader.read())
+    except KeyboardInterrupt:
+        logging.info("exit")
+        break
+    except Exception as ex:
+        logging.error("Exception occurred", exc_info=True)
+
+reader.stop_reading()
+
+hostmqtt.status({"status": "STOPPED"})

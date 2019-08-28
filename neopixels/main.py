@@ -1,5 +1,5 @@
-import paho.mqtt.client as mqtt #import the client1
-import paho.mqtt.publish as publish
+#!/usr/bin/python
+
 import time
 import sys
 import socket
@@ -8,23 +8,69 @@ import yaml
 import time
 from neopixel import *
 import argparse
+import logging
 
-# uses https://github.com/jgarff/rpi_ws281x.git 
+# the config and mqtt modules are in a bad place atm :/
+import sys
+sys.path.append('./mqtt/')
+import config
+import mqtt
+
+myHostname = config.getHostname()
+deploymenttype=config.getDeploymentType()
+DEVICENAME=config.getDevicename()
+
+mqttHost = config.getValue("mqtthostname", "localhost")
+hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
+hostmqtt.loop_start()   # use the background thread
+
+hostsConfig = config.getValue("hosts", {})
+deployments = config.getValue("deployments", {})
+
+logging.info(deployments)
+
+settings = deployments[deploymenttype][DEVICENAME]
+
+logging.info(settings)
+
+# uses https://github.com/jgarff/rpi_ws281x
 # LED strip configuration:
-LED_COUNT      = 3      # Number of LED pixels.
-LED_PIN        = 21      # GPIO pin connected to the pixels (18 uses PWM!).
+LED_COUNT      = settings["led-count"]      # Number of LED pixels.
+LED_PIN        = settings["led-pin"]      # GPIO pin connected to the pixels (18 uses PWM!).
+# when _not_ using the pHAT DAC, you can use all sorts of pins :)
+# GPIO12, GPIO18, GPIO21, and GPIO19 on DMA 1
 #LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
 LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
+if LED_PIN in {13, 19, 41, 45, 53}:
+    LED_CHANNEL = 1
 
+# Bizzareness when using 4 separate neopixel arrays:
+# solder to GPIOs 12, 18, 19, 21: the driving 12 or 18 lights up both arrays both times, and 13, which is not connected also drives one
+# solder to GPIOs 13, 18, 19, 21: driving 19 will light up 2 of the arrays, but driving 13, 18, 21 and 12 gets the 4 different arrays
+
+
+#logging.info(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 # Create NeoPixel object with appropriate configuration.
 strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
 # Intialize the library (must be called once before other functions).
 strip.begin()
 
+# can do things like:
+#  mosquitto_pub -h mqtt -t two/neopixel/play -m '{"operation": "theatrechase", "colour": "green"}'
+
+############
+colours = {
+    'off': Color(0,0,0),
+    'white': Color(180,180,180),
+    'green': Color(255,0,0),
+    'red': Color(0,255,0),
+    'blue': Color(0,0,255),
+    'yellow': Color(255,255,0)
+}
 
 # Define functions which animate LEDs in various ways.
 def colorWipe(strip, color, wait_ms=50):
@@ -35,69 +81,208 @@ def colorWipe(strip, color, wait_ms=50):
         time.sleep(wait_ms/1000.0)
 
 
-#######
-# load config (extract to lib)
-configFile = "config.yml"
-if len(sys.argv) > 1:
-    configFile = sys.argv[1]
+def theaterChase(strip, color, wait_ms=50, iterations=10):
+    """Movie theater light style chaser animation."""
+    for j in range(iterations):
+        for q in range(3):
+            for i in range(0, strip.numPixels(), 3):
+                strip.setPixelColor(i+q, color)
+            strip.show()
+            time.sleep(wait_ms/1000.0)
+            for i in range(0, strip.numPixels(), 3):
+                strip.setPixelColor(i+q, 0)
 
-with open(configFile, 'r') as ymlfile:
-    cfg = yaml.load(ymlfile)
+def wheel(pos):
+    """Generate rainbow colors across 0-255 positions."""
+    if pos < 85:
+        return Color(pos * 3, 255 - pos * 3, 0)
+    elif pos < 170:
+        pos -= 85
+        return Color(255 - pos * 3, 0, pos * 3)
+    else:
+        pos -= 170
+        return Color(0, pos * 3, 255 - pos * 3)
 
-mqttHost = "mqtt"
-if "mqtthostname" in cfg and cfg["mqtthostname"] != "":
-    mqttHost = cfg["mqtthostname"]
+def rainbow(strip, wait_ms=20, iterations=1):
+    """Draw rainbow that fades across all pixels at once."""
+    for j in range(256*iterations):
+        for i in range(strip.numPixels()):
+            strip.setPixelColor(i, wheel((i+j) & 255))
+        strip.show()
+        time.sleep(wait_ms/1000.0)
 
-myHostname = socket.gethostname()
-if "hostname" in cfg and cfg["hostname"] != "":
-    myHostname = cfg["hostname"]
-# end load config
+def rainbowCycle(strip, wait_ms=20, iterations=5):
+    """Draw rainbow that uniformly distributes itself across all pixels."""
+    for j in range(256*iterations):
+        for i in range(strip.numPixels()):
+            strip.setPixelColor(i, wheel((int(i * 256 / strip.numPixels()) + j) & 255))
+        strip.show()
+        time.sleep(wait_ms/1000.0)
 
+def theaterChaseRainbow(strip, wait_ms=50):
+    """Rainbow movie theater light style chaser animation."""
+    for j in range(256):
+        for q in range(3):
+            for i in range(0, strip.numPixels(), 3):
+                strip.setPixelColor(i+q, wheel((i+j) % 255))
+            strip.show()
+            time.sleep(wait_ms/1000.0)
+            for i in range(0, strip.numPixels(), 3):
+                strip.setPixelColor(i+q, 0)
+
+def set_neopixels(strip, color, count):
+    if count > strip.numPixels():
+        count = strip.numPixels()
+    logging.info("setting %d pixesl to %s" % (count, color))
+    for i in range(0, strip.numPixels()):
+        if i < count:
+            strip.setPixelColor(i, color)
+        else:
+            strip.setPixelColor(i, colours['off'])
+    strip.show()
+
+# health will be a setting of 10 pixels, and the number will be out of 100
+def health(strip, color, health, tip = 'off', wait_ms=50):
+    count = health/100
+    set_neopixels(strip, color, health)
+    strip.setPixelColor(strip.numPixels()-1, colours[tip])
+    strip.show()
 
 ############
-def play():
-    print ('Color wipe animations.')
-    colorWipe(strip, Color(255, 0, 0))  # Red wipe
-    colorWipe(strip, Color(0, 255, 0))  # Blue wipe
-    colorWipe(strip, Color(0, 0, 255))  # Green wipe
-    colorWipe(strip, Color(0,0,0), 10)
+def get(obj, name, default):
+    result = default
+    if name in obj:
+        result = obj[name]
+    return result
 
+##############
 
-############
-def on_message(client, userdata, message):
-    payload=str(message.payload.decode("utf-8"))
-    print("")
-    print("message received " ,payload)
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
+#Fire	Earth	Water	Air
+#RED	GREEN	BLUE	WHITE
 
-    try:
-        if mqtt.topic_matches_sub("follyengine/all/neopixel", message.topic):
-            # everyone
-            print("everyone plays "+payload)
-            play()
-        elif mqtt.topic_matches_sub("follyengine/"+myHostname+"/neopixel", message.topic):
-            print(myHostname+" got "+payload+" SPARKLES!!")
-            play()
-    except:
+def magic_item(strip, payload):
+    length = 16
+
+    air = payload['Air'] / 10
+    water = payload['Water'] / 10
+    earth = payload['Earth'] / 10
+    fire = payload['Fire'] / 10
+    logging.info("fire: %d, earth %d, water %d, air %d" % (fire, earth, water, air))
+
+    #TODO: should default the 4 values
+    #do one (A, B first)
+    index = 0
+    blank = length - fire
+    for i in range(blank):
+        one.setPixelColor(index, colours['off'])
+        index = index + 1
+    for i in range(fire):
+        one.setPixelColor(index, colours['red'])
+        index = index + 1
+    blank = length - water
+    for i in range(water):
+        one.setPixelColor(index, colours['blue'])
+        index = index + 1
+    for i in range(blank):
+        one.setPixelColor(index, colours['off'])
+        index = index + 1
+
+    #do two (C, D first)
+    index = 0
+    blank = length - earth
+    for i in range(blank):
+        two.setPixelColor(index, colours['off'])
+        index = index + 1
+    for i in range(earth):
+        two.setPixelColor(index, colours['green'])
+        index = index + 1
+    blank = length - air
+    for i in range(air):
+        two.setPixelColor(index, colours['white'])
+        index = index + 1
+    for i in range(blank):
+        two.setPixelColor(index, colours['off'])
+        index = index + 1
+
+    one.show()
+    two.show()
+
+##############
+operations = {
+    # custom = has A, B, C, D
+    'magic_item': magic_item,
+    # needs colour and count
+    'set': set_neopixels,
+    'health': health,
+    #needs colour
+    'colourwipe': colorWipe,
+    'theatrechase': theaterChase,
+    #no colour option
+    'rainbow': rainbow,
+    'rainbow_cycle': rainbowCycle,
+}
+###############
+def play(payload = {}):
+    operationname = get(payload, 'operation', 'colourwipe')
+    operation = get(operations, operationname, operations['colourwipe'])
+    logging.info("playing %s" % operationname)
+
+    if operationname == 'magic_item':
+        operation(strip, payload)
         return
+
+    if operationname == 'rainbow' or operationname == 'rainbow_cycle':
+        operation(strip)
+        return
+
+    colourname = get(payload, 'colour', 'off')
+    colour = get(colours, colourname, colours['off'])
+    # TODO: maybe change to using HTML colours #000000 style?
+    if operationname == 'colourwipe' or operationname == 'theatrechase':
+        operation(strip, colour)
+        return
+
+    count = get(payload, 'count', 10)
+    operation(strip, colour, count)
+
 ########################################
+# on_message subscription functions
+def msg_play(topic, payload):
+    if mqtt.MQTT.topic_matches_sub(hostmqtt, "all/"+DEVICENAME+"/play", topic):
+        # everyone
+        #logging.info("everyone plays "+payload)
+        play(payload)
+    elif mqtt.MQTT.topic_matches_sub(hostmqtt, myHostname+"/"+DEVICENAME+"/play", topic):
+        #logging.info(myHostname+" got "+payload+" SPARKLES!!")
+        play(payload)
 
-client = mqtt.Client(myHostname+"_neopixels") #create new instance
-client.on_message=on_message #attach function to callback
+def msg_test(topic, payload):
+    play({'operation': 'colourwipe', 'colour': 'yellow'})
 
-print("Connecting to MQTT at: %s" % mqttHost)
-client.connect(mqttHost) #connect to broker
+def msg_combat_end(topic, payload):
+    colourname = get(payload, 'colour', 'yellow')
+    count = get(payload, 'count', 1)
+    for i in range(0, count):
+        play({'operation': 'colourwipe', 'colour': colourname})
+        play({'operation': 'colourwipe', 'colour': 'off'})
 
-client.subscribe("follyengine/"+myHostname+"/neopixel")
 
-client.publish("status/"+myHostname+"/neopixel","STARTED")
-publish.single("follyengine/"+myHostname+"/neopixel", "test", hostname=mqttHost)
+hostmqtt.subscribe("play", msg_play)
+hostmqtt.subscribeL("all", DEVICENAME, "play", msg_play)
+hostmqtt.subscribeL("all", DEVICENAME, "test", msg_test)
+
+hostmqtt.subscribeL(myHostname, DEVICENAME, "combat-end", msg_combat_end)
+
+hostmqtt.status({"status": "listening"})
+msg_combat_end('one/two/three', {'colour': 'red', 'count': 1})
+hostmqtt.publish('combat-end', {'colour': 'yellow', 'count': 1})
 
 try:
-    client.loop_forever()
+    while True:
+        time.sleep(1)
+except Exception as ex:
+    logging.error("Exception occurred", exc_info=True)
 except KeyboardInterrupt:
-    print("exit")
+    logging.info("exit")
 
-client.publish("status/"+myHostname+"/neopixel","STOPPED")
+hostmqtt.status({"status": "STOPPED"})

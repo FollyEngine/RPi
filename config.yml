@@ -1,454 +1,74 @@
 
-# set this on the usb stick for each pillar
-#hostname: Podium5
-start_state: Podium5
-sounddir: "/home/sven/src/follyengine/convictshope/"
-testsound: "/usr/share/scratch/Media/Sounds/Effects/Bubbles.wav"
+#mqttHost = config.getValue("mqtthostname", "localhost")
+#myHostname = config.getValue("hostname", socket.gethostname())
+#hostmqtt = mqtt.MQTT(mqttHost, myHostname, "relay_from")
+#hostmqtt.loop_start()   # use the background thread
+#master_mqtt_host = config.getValue("mqttmaster", "mqtt.thegame.folly.site")
 
-mqtthostname: 127.0.0.1
+# set hostname to override the automatic setting from host
+#hostname: onceler
 
-# the led's
-sparkles: "play-sparkles"
+# use this setting if things need to work with bad internet connectivity
+mqtthostname: "localhost"
+mqttmaster: "mqtt.thegame.folly.site"
 
-# rfid -> object name
-items:
-    #testing
-    "0A3D02A4": "playhero"
-    "CAF7F5A3": "magnifying"
+#good internet connectivity
+#mqtthostname: "mqtt.thegame.folly.site"
+#mqttmaster: ""
 
-    #special codes
-    "REMOVED": "removed"
-    "(null)": "none"
-    "234FEBD1": "play-sparkles"
+deployments:
+  megagame:
+    # relay only needed if using poor internet
+    #relay_from:
+    #  type: mqtt
+    ping:
+      type: ping
+    # not yet (causes perf issues)
+    audio:
+      type: audio
+      pins: [18, 19, 21]
+    #speakerphat:
+    #  type: speakerphat
+    #  pins: [2, 3, 18, 19, 21]
+    rfid-nfc:
+      type: rfid-mifare
+    neopixel-status:
+      type: neopixels
+      led-count: 1
+      led-pin: 12
+      pins: [12]
+    neopixel-level:
+      type: neopixels
+      led-count: 16
+      led-pin: 13
+      pins: [13]
+    crickit:
+      type: crickit
+hosts:
+  one:
+    type: megagame
+  two:
+    type: megagame
+  yoga260:
+    type: megagame
+  zero-1:
+    type: megagame
+  zero-2:
+    type: megagame
+  zero-3:
+    type: megagame
+  zero-4:
+    type: megagame
+  node1:
+    type: megagame
+  node2:
+    type: megagame
+  nodeA1:
+    type: megagame
+  newhost:
+    type: megagame
+  crickit-1:
+    type: megagame
+  crickit-2:
+    type: megagame
 
-
-    "04CF364A853280": "mute"
-
-    "AA4F00A4": "reset"
-    "DA29FAA3": "reset"
-
-    "8A14F7A3": "playhero"   # 1
-    "6AC9FBA3": "playhero"   #2
-    "550A5CBC": "sven"  # sven's keyfob
-
-    "9A47F6A3": "twinkle"
-
-    # Props master list
-    "FACEFAA3": "pot"
-    "3A06C79F": "key"
-    "FAB2F8A3": "bandages"
-    "6AC5F5A3": "handkerchief"
-    "CAC800A4": "envelope"
-    "9A5AB69F": "tobacco"
-
-    "3AABFDA3": "letter"
-
-    "FA1C07A4": "salty"
-    "8A3DF8A3": "sour"
-    "EA1A03A4": "magnifying"
-    "DAA0F9A3": "sweet"
-    "0A61F9A3": "lock"
-    "5A05FFA3": "dustpan"
-    "0A3301A4": "handle"
-    "DA04C99F": "teapot"
-    "1A95F7A3": "dish"
-    "7A46FFA3": "jar"
-    "7A31CE9F": "mirror"
-    "8A0302A4": "goblet"
-    "5A91C69F": "perfume"
-    "CAC702A4": "watering"
-    "8AE7CD9F": "stick"
-    "DA41F6A3": "swandish"
-    "4AB201A4": "wand1"
-    "9A5DDA9F": "wand2"
-    "EAA9FDA3": "wand3"
-    ##
-    "FAE4F9A3": "kettle"
-    "AA0A06A4": "fork"
-    "FAB6F9A3": "iron"
-    "5AA9F4A3": "kerosene"
-    "AAAE05A4": "medical"
-    "1A5AF8A3": "chains"
-    "EA93BA9F": "candles"
-
-    ## special
-    "": "No_A"
-    "": "No_B"
-    "": "No_C"
-    "": "Yes"
-    "": "NotYet"
-    "": "Interesting_A"
-    "": "Interesting_B"
-    "": "Future"
-    "": "NotForUs"
-
-    ## External comments
-
-#if item == "sven" or item == "twinkle" or item == "letter":
-allowrepeats:
-  sven: "true"
-  twinkle: "true"
-  letter: "true"
-  sweet: "true"
-  sour: "true"
-  salty: "true"
-  "OK": "true"
-
-# The order of completion is 5 - 1 - 6 - 2 - 3 - 4."
-# hero item to its matching podium
-
-heros:
-  "Podium1":
-    "item": "envelope"
-    next: Podium6
-  "Podium2":
-    "item": "key"
-    next: Podium3
-  "Podium3":
-    "item": "bandages"
-    next: Podium4
-  "Podium4":
-    "item": "tobacco"
-    next: FutureText
-  "Podium5":
-    "item": "handkerchief"
-    next: Podium1
-  "Podium6":
-    "item": "pot"
-    next: Podium2
-#  "FutureText":
-#    "item": "none"
-#    next: ButNotForUs
-
-# podium ->
-#      object name -> sound file path
-podium:
-  # default for all podium
-  default:
-    "OK": "/usr/share/scratch/Media/Sounds/Electronic/SpaceRipple.wav"
-
-    "removed": ""
-    "none": ""
-    "play-sparkles": "/usr/share/scratch/Media/Sounds/Electronic/Fairydust.wav"
-    "twinkle": "HeroTwinkle/short-twinkle.wav"
-
-    "sven": "/usr/share/scratch/Media/Sounds/Electronic/ComputerBeeps2.wav"
-
-    "reset": "HeroTwinkle/short-twinkle.wav"
-    "next_state": "HeroTwinkle/short-twinkle.wav"
-
-    "longtwinkleletter": "HeroTwinkle/short-twinkle.wav"
-    "letter": "HeroSparkle/letter_sparkle.wav"
-
-    #
-
-    # in original dir
-    # find -name '*.wav' -exec ffmpeg -y -i '{}' -ar 44100 .{} \;
-    # and then make the yaml:
-    # find Podium2 -type f | sed 's/\(.*\)\/2\(.*\).wav/    "\2": "\0"/g'
-  Podium1:
-    "dustpan": "Podium1/1dustpan.wav"
-    "fork": "Podium1/1fork.wav"
-    "kettle": "Podium1/1kettle.wav"
-    "Yes": "Podium1/1Yes.wav"
-    "watering": "Podium1/1watering.wav"
-    "goblet": "Podium1/1goblet.wav"
-    "magnifying": "Podium1/1magnifying.wav"
-    "sweet": "Podium1/1sweet.wav"
-    "candles": "Podium1/1candles.wav"
-    "teapot": "Podium1/1teapot.wav"
-    "mirror": "Podium1/1mirror.wav"
-    "perfume": "Podium1/1perfume.wav"
-    "key": "Podium1/1key.wav"
-    "Interesting_A": "Podium1/1Interesting_A.wav"
-    "chains": "Podium1/1chains.wav"
-    "handkerchief": "Podium1/1handkerchief.wav"
-    "pot": "Podium1/1pot.wav"
-    "wand1": "Podium1/1wand.wav"
-    "wand2": "Podium1/1wand.wav"
-    "wand3": "Podium1/1wand.wav"
-    "swandish": "Podium1/1swandish.wav"
-    "dish": "Podium1/1dish.wav"
-    "jar": "Podium1/1jar.wav"
-    "tobacco": "Podium1/1tobacco.wav"
-    "handle": "Podium1/1handle.wav"
-    "envelope": "Podium1/1envelope.wav"
-    "salty": "Podium1/1salty.wav"
-    "iron": "Podium1/1iron.wav"
-    "No_C": "Podium1/1No_C.wav"
-    "No_B": "Podium1/1No_B.wav"
-    "Interesting_B": "Podium1/1Interesting_B.wav"
-    "medical": "Podium1/1medical.wav"
-    "stick": "Podium1/1stick.wav"
-    "NotYet": "Podium1/1NotYet.wav"
-    "kerosene": "Podium1/1kerosene.wav"
-    "No_A": "Podium1/1No_A.wav"
-    "bandages": "Podium1/1bandages.wav"
-    "lock": "Podium1/1lock.wav"
-    "sour": "Podium1/1sour.wav"
-
-    "future": "FutureText/1future.wav"
-    "envelope_no": "HeroItemsNo/1envelope_no.wav"
-    "longtwinklehero": "HeroTwinkle/1envelope_hero_twinkle.wav"
-    "hero": "HeroSparkle/1envelope_hero_sparkle.wav"
-
-    "hero_no": "HeroItemsNo/1envelope_no.wav"
-  Podium2:
-    "Yes": "Podium2/2Yes.wav"
-    "magnifying": "Podium2/2magnifying.wav"
-    "jar": "Podium2/2jar.wav"
-    "tobacco": "Podium2/2tobacco.wav"
-    "bandages": "Podium2/2bandages.wav"
-    "envelope": "Podium2/2envelope.wav"
-    "lock": "Podium2/2lock.wav"
-    "Interesting_A": "Podium2/2Interesting_A.wav"
-    "teapot": "Podium2/2teapot.wav"
-    "watering": "Podium2/2watering.wav"
-    "fork": "Podium2/2fork.wav"
-    "perfume": "Podium2/2perfume.wav"
-    "key": "Podium2/2key.wav"
-    "NotYet": "Podium2/2NotYet.wav"
-    "swandish": "Podium2/2swandish.wav"
-    "sweet": "Podium2/2sweet.wav"
-    "No_C": "Podium2/2No_C.wav"
-    "medical": "Podium2/2medical.wav"
-    "iron": "Podium2/2iron.wav"
-    "kettle": "Podium2/2kettle.wav"
-    "handkerchief": "Podium2/2handkerchief.wav"
-    "dustpan": "Podium2/2dustpan.wav"
-    "handle": "Podium2/2handle.wav"
-    "wand1": "Podium2/2wand.wav"
-    "wand2": "Podium2/2wand.wav"
-    "wand3": "Podium2/2wand.wav"
-    "pot": "Podium2/2pot.wav"
-    "dish": "Podium2/2dish.wav"
-    "No_B": "Podium2/2No_B.wav"
-    "kerosene": "Podium2/2kerosene.wav"
-    "goblet": "Podium2/2goblet.wav"
-    "salty": "Podium2/2salty.wav"
-    "candles": "Podium2/2candles.wav"
-    "sour": "Podium2/2sour.wav"
-    "Interesting_B": "Podium2/2Interesting_B.wav"
-    "stick": "Podium2/2stick.wav"
-    "mirror": "Podium2/2mirror.wav"
-    "chains": "Podium2/2chains.wav"
-    "No_A": "Podium2/2No_A.wav"
-
-    "future": "FutureText/2future.wav"
-    "key_no": "HeroItemsNo/2key_no.wav"
-    "hero_no": "HeroItemsNo/2key_no.wav"
-
-    "longtwinklehero": "HeroTwinkle/2key_hero_twinkle.wav" #not used anymore
-    "hero": "HeroSparkle/2key_hero_sparkle.wav"
-
-  Podium3:
-    "handkerchief": "Podium3/3handkerchief.wav"
-    "dish": "Podium3/3dish.wav"
-    "magnifying": "Podium3/3magnifying.wav"
-    "NotYet": "Podium3/3NotYet.wav"
-    "fork": "Podium3/3fork.wav"
-    "handle": "Podium3/3handle.wav"
-    "mirror": "Podium3/3mirror.wav"
-    "bandages": "Podium3/3bandages.wav"
-    "wand1": "Podium3/3wand.wav"
-    "wand2": "Podium3/3wand.wav"
-    "wand3": "Podium3/3wand.wav"
-    "Interesting_A": "Podium3/3Interesting_A.wav"
-    "Yes": "Podium3/3Yes.wav"
-    "teapot": "Podium3/3teapot.wav"
-    "sour": "Podium3/3sour.wav"
-    "jar": "Podium3/3jar.wav"
-    "pot": "Podium3/3pot.wav"
-    "medical": "Podium3/3medical.wav"
-    "dustpan": "Podium3/3dustpan.wav"
-    "kerosene": "Podium3/3kerosene.wav"
-    "chains": "Podium3/3chains.wav"
-    "stick": "Podium3/3stick.wav"
-    "iron": "Podium3/3iron.wav"
-    "watering": "Podium3/3watering.wav"
-    "kettle": "Podium3/3kettle.wav"
-    "No_A": "Podium3/3No_A.wav"
-    "Interesting_B": "Podium3/3Interesting_B.wav"
-    "salty": "Podium3/3salty.wav"
-    "envelope": "Podium3/3envelope.wav"
-    "candles": "Podium3/3candles.wav"
-    "sweet": "Podium3/3sweet.wav"
-    "tobacco": "Podium3/3tobacco.wav"
-    "lock": "Podium3/3lock.wav"
-    "goblet": "Podium3/3goblet.wav"
-    "perfume": "Podium3/3perfume.wav"
-    "No_B": "Podium3/3No_B.wav"
-    "No_C": "Podium3/3No_C.wav"
-    "swandish": "Podium3/3swandish.wav"
-    "key": "Podium3/3key.wav"
-
-    "future": "FutureText/3future.wav"
-    "bandages_no": "HeroItemsNo/3bandages_no.wav"
-    "longtwinklehero": "HeroTwinkle/3bandages_hero_twinkle.wav"
-    "hero": "HeroSparkle/3bandages_hero_sparkle.wav"
-
-    "hero_no": "HeroItemsNo/3bandages_no.wav"
-  Podium4:
-    "dustpan": "Podium4/4dustpan.wav"
-    "candles": "Podium4/4candles.wav"
-    "Yes": "Podium4/4Yes.wav"
-    "perfume": "Podium4/4perfume.wav"
-    "chains": "Podium4/4chains.wav"
-    "NotYet": "Podium4/4NotYet.wav"
-    "iron": "Podium4/4iron.wav"
-    "handle": "Podium4/4handle.wav"
-    "tobacco": "Podium4/4tobacco.wav"
-    "wand1": "Podium4/4wand.wav"
-    "wand2": "Podium4/4wand.wav"
-    "wand3": "Podium4/4wand.wav"
-    "No_B": "Podium4/4No_B.wav"
-    "key": "Podium4/4key.wav"
-    "dish": "Podium4/4dish.wav"
-    "kerosene": "Podium4/4kerosene.wav"
-    "sour": "Podium4/4sour.wav"
-    "swandish": "Podium4/4swandish.wav"
-    "stick": "Podium4/4stick.wav"
-    "sweet": "Podium4/4sweet.wav"
-    "Interesting_A": "Podium4/4Interesting_A.wav"
-    "lock": "Podium4/4lock.wav"
-    "salty": "Podium4/4salty.wav"
-    "goblet": "Podium4/4goblet.wav"
-    "mirror": "Podium4/4mirror.wav"
-    "handkerchief": "Podium4/4handkerchief.wav"
-    "Interesting_B": "Podium4/4Interesting_B.wav"
-    "kettle": "Podium4/4kettle.wav"
-    "No_C": "Podium4/4No_C.wav"
-    "No_A": "Podium4/4No_A.wav"
-    "teapot": "Podium4/4teapot.wav"
-    "fork": "Podium4/4fork.wav"
-    "bandages": "Podium4/4bandages.wav"
-    "medical": "Podium4/4medical.wav"
-    "magnifying": "Podium4/4magnifying.wav"
-    "watering": "Podium4/4watering.wav"
-    "jar": "Podium4/4jar.wav"
-    "pot": "Podium4/4pot.wav"
-    "envelope": "Podium4/4envelope.wav"
-
-    "future": "FutureText/4future.wav"
-    "tobacco_no": "HeroItemsNo/4tobacco_no.wav"
-    "longherohero": "HeroTwinkle/4tobacco_hero_twinkle.wav"
-    "hero": "HeroSparkle/4tobacco_hero_sparkle.wav"
-    "hero_no": "HeroItemsNo/4tobacco_no.wav"
-  Podium5:
-    "salty": "Podium5/5salty.wav"
-    "envelope": "Podium5/5envelope.wav"
-    "watering": "Podium5/5watering.wav"
-    "Interesting_A": "Podium5/5Interesting_A.wav"
-    "swandish": "Podium5/5swandish.wav"
-    "dish": "Podium5/5dish.wav"
-    "handkerchief": "Podium5/5handkerchief.wav"
-    "candles": "Podium5/5candles.wav"
-    "fork": "Podium5/5fork.wav"
-    "kettle": "Podium5/5kettle.wav"
-    "iron": "Podium5/5iron.wav"
-    "sweet": "Podium5/5sweet.wav"
-    "No_C": "Podium5/5No_C.wav"
-    "wand1": "Podium5/5wand.wav"
-    "wand2": "Podium5/5wand.wav"
-    "wand3": "Podium5/5wand.wav"
-    "sour": "Podium5/5sour.wav"
-    "dustpan": "Podium5/5dustpan.wav"
-    "No_A": "Podium5/5No_A.wav"
-    "bandages": "Podium5/5bandages.wav"
-    "kerosene": "Podium5/5kerosene.wav"
-    "pot": "Podium5/5pot.wav"
-    "Interesting_B": "Podium5/5Interesting_B.wav"
-    "perfume": "Podium5/5perfume.wav"
-    "stick": "Podium5/5stick.wav"
-    "magnifying": "Podium5/5magnifying.wav"
-    "No_B": "Podium5/5No_B.wav"
-    "mirror": "Podium5/5mirror.wav"
-    "jar": "Podium5/5jar.wav"
-    "teapot": "Podium5/5teapot.wav"
-    "handle": "Podium5/5handle.wav"
-    "key": "Podium5/5key.wav"
-    "tobacco": "Podium5/5tobacco.wav"
-    "lock": "Podium5/5lock.wav"
-    "goblet": "Podium5/5goblet.wav"
-    "chains": "Podium5/5chains.wav"
-    "medical": "Podium5/5medical.wav"
-
-    "future": "FutureText/5future.wav"
-    "handkerchief_no": "HeroItemsNo/5handkerchief_no.wav"
-    "longtwinklehero": "HeroTwinkle/5handkerchief_hero_twinkle.wav"
-    "hero": "HeroSparkle/5handkerchief_hero_sparkle.wav"
-
-    "hero_no": "HeroItemsNo/5handkerchief_no.wav"
-  Podium6:
-    "dustpan": "Podium6/6dustpan.wav"
-    "NotYet": "Podium6/6NotYet.wav"
-    "handkerchief": "Podium6/6handkerchief.wav"
-    "dish": "Podium6/6dish.wav"
-    "mirror": "Podium6/6mirror.wav"
-    "Interesting_A": "Podium6/6Interesting_A.wav"
-    "No_A": "Podium6/6No_A.wav"
-    "lock": "Podium6/6lock.wav"
-    "iron": "Podium6/6iron.wav"
-    "salty": "Podium6/6salty.wav"
-    "goblet": "Podium6/6goblet.wav"
-    "magnifying": "Podium6/6magnifying.wav"
-    "kerosene": "Podium6/6kerosene.wav"
-    "medical": "Podium6/6medical.wav"
-    "Yes": "Podium6/6Yes.wav"
-    "bandages": "Podium6/6bandages.wav"
-    "handle": "Podium6/6handle.wav"
-    "fork": "Podium6/6fork.wav"
-    "No_C": "Podium6/6No_C.wav"
-    "No_B": "Podium6/6No_B.wav"
-    "perfume": "Podium6/6perfume.wav"
-    "sweet": "Podium6/6sweet.wav"
-    "pot": "Podium6/6pot.wav"
-    "stick": "Podium6/6stick.wav"
-    "watering": "Podium6/6watering.wav"
-    "swandish": "Podium6/6swandish.wav"
-    "key": "Podium6/6key.wav"
-    "Interesting_B": "Podium6/6Interesting_B.wav"
-    "teapot": "Podium6/6teapot.wav"
-    "wand1": "Podium6/6wand.wav"
-    "wand2": "Podium6/6wand.wav"
-    "wand3": "Podium6/6wand.wav"
-    "tobacco": "Podium6/6tobacco.wav"
-    "chains": "Podium6/6chains.wav"
-    "jar": "Podium6/6jar.wav"
-    "kettle": "Podium6/6kettle.wav"
-    "envelope": "Podium6/6envelope.wav"
-    "candles": "Podium6/6candles.wav"
-    "sour": "Podium6/6sour.wav"
-
-    "future": "FutureText/6future.wav"
-    "pot_no": "HeroItemsNo/6pot_no.wav"
-    "longtwinklehero": "HeroTwinkle/6pot_hero_twinkle.wav"
-    "hero": "HeroSparkle/6pot_hero_sparkle.wav"
-    "hero_no": "HeroItemsNo/6pot_no.wav"
-
-
-# TODO: not not sure how I'll implement this
-    "Jealous_A": "Jealous/1Jealous_A.wav"
-    "Jealous_D": "Jealous/4Jealous_D.wav"
-    "Jealous_C": "Jealous/5Jealous_C.wav"
-    "Jealous_C": "Jealous/6Jealous_C.wav"
-    "Jealous_B": "Jealous/1Jealous_B.wav"
-    "Jealous_A": "Jealous/6Jealous_A.wav"
-    "Jealous_D": "Jealous/6Jealous_D.wav"
-    "Jealous_C": "Jealous/2Jealous_C.wav"
-    "Jealous_D": "Jealous/5Jealous_D.wav"
-    "Jealous_B": "Jealous/5Jealous_B.wav"
-    "Jealous_C": "Jealous/3Jealous_C.wav"
-    "Jealous_D": "Jealous/1Jealous_D.wav"
-    "Jealous_A": "Jealous/3Jealous_A.wav"
-    "Jealous_A": "Jealous/5Jealous_A.wav"
-    "Jealous_A": "Jealous/2Jealous_A.wav"
-    "Jealous_A": "Jealous/4Jealous_A.wav"
-    "Jealous_C": "Jealous/4Jealous_C.wav"
-    "Jealous_B": "Jealous/3Jealous_B.wav"
-    "Jealous_B": "Jealous/4Jealous_B.wav"
-    "Jealous_B": "Jealous/6Jealous_B.wav"
-    "Jealous_D": "Jealous/3Jealous_D.wav"
-    "Jealous_B": "Jealous/2Jealous_B.wav"
-    "Jealous_D": "Jealous/2Jealous_D.wav"
-    "Jealous_C": "Jealous/1Jealous_C.wav"
