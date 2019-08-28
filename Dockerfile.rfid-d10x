@@ -1,0 +1,10 @@
+FROM follyengine/base
+
+# docker run --rm -it --net host --device /dev/ttyUSB0  follyengine/rfid-d10x:latest /src/rfid-d10x/main.py $(hostname) megagame uhf
+
+# yellow uhf reader rfid-d10x
+COPY rfid-d10x /src/rfid-d10x/
+RUN pip3 install --no-cache-dir -r /src/rfid-d10x/requirements.txt
+RUN apt-get install -yq python3-serial
+
+ENTRYPOINT /src/rfid-d10x/main.py

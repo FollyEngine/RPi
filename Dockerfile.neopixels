@@ -5,4 +5,4 @@ FROM follyengine/base
 COPY neopixels /src/neopixels/
 RUN /src/neopixels/setup.sh
 
-CMD /src/neopixels/main.py
+ENTRYPOINT /src/neopixels/main.py
