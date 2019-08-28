@@ -24,11 +24,6 @@ CMD /src/run.py
 
 # not in the base image
 #            python3-setuptools python3-dev \
-# # neopixels
-# COPY neopixels /src/neopixels/
-# RUN pip install --no-cache-dir -r /src/neopixels/requirements.txt \
-#     && pip3 install --no-cache-dir -r /src/neopixels/requirements.txt \
-#     && /src/neopixels/setup.sh
 
 
 # for RFID:
@@ -37,7 +32,7 @@ CMD /src/run.py
 # for audio:
 # scratch python-pygame
 
-# serial?
+# serial - for rfid...
 # python3-serial python-serial
 
 

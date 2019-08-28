@@ -16,6 +16,9 @@ mqttmaster: "mqtt.thegame.folly.site"
 #mqtthostname: "mqtt.thegame.folly.site"
 #mqttmaster: ""
 
+sounddir: "/src/audio/"
+testsound: "Bubbles.wav"
+
 deployments:
   megagame:
     # relay only needed if using poor internet

@@ -1,0 +1,10 @@
+FROM follyengine/base
+
+# docker run --rm -it --net host --device /dev/snd follyengine/audio void-detector megagame audio
+# mosquitto_pub -t void-detector/audio/play -m '{"sound": "/usr/share/scratch/Media/Sounds/Instruments/GuitarStrum.wav"}'
+
+# # audio
+COPY audio /src/audio/
+RUN /src/audio/setup.sh
+
+ENTRYPOINT [ "/src/audio/main.py" ]

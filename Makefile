@@ -35,6 +35,7 @@ build:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/base -f Dockerfile.base .
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/neopixels -f Dockerfile.neopixels .
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/rfid-d10x -f Dockerfile.rfid-d10x .
+	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/audio -f Dockerfile.audio .
 
 push:
 	docker push ${RFIDIMAGE}
