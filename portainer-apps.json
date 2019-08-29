@@ -1,0 +1,10 @@
+[
+    {
+        "type": 1,
+        "title": "FollyStatus",
+        "description": "node status update",
+        "image": "follyengine/base:latest",
+        "network": "host",
+        "categories": ["follyengine", "node-red"]
+      }
+]
