@@ -5,7 +5,7 @@
         "description": "node status ping",
         "image": "follyengine/ping:latest",
         "note": "v0.1.1",
-        "command": "detect unknown ping",
+        "command": "/src/ping/main.py detect unknown ping",
         "network": "host",
         "categories": ["follyengine", "node-red"]
       }
