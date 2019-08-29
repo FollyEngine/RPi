@@ -1,0 +1,8 @@
+FROM follyengine/base
+
+
+# ping
+COPY ping /src/ping/
+
+ENTRYPOINT /src/ping/main.py
+CMD ["detect", "unknown", "ping"]

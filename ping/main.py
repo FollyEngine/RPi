@@ -28,10 +28,13 @@ hostsConfig = config.getValue("hosts", {})
 deployments = config.getValue("deployments", {})
 
 logging.info(deployments)
+settings = {}
 
-settings = deployments[deploymenttype][DEVICENAME]
-
-logging.info(settings)
+# the pinger might have been started from a dynamic runner
+if deploymenttype in deployments:
+    if DEVICENAME in deployments[deploymenttype]:
+        settings = deployments[deploymenttype][DEVICENAME]
+        logging.info(settings)
 
 ############
 def get(obj, name, default):

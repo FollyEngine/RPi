@@ -21,7 +21,8 @@ def getHostname(args=True):
         exit()
     hostname=socket.gethostname()
     if args:
-        hostname=sys.argv[1]
+        if sys.argv[1] != "detect":
+            hostname=sys.argv[1]
     return getValue("hostname", hostname)
 
 def getDeploymentType():

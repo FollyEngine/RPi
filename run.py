@@ -37,7 +37,7 @@ if mqttMasterHost != "":
         logging.info("Waiting for %s: attempt %s"% (mqttMasterHost, i))
 
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
-#hostmqtt.loop_start()   # don't use the background thread (can't publish results from the background?)
+hostmqtt.loop_start()   # don't use the background thread (can't publish results from the background?)
 
 ########################################
 def startServices():
@@ -49,11 +49,13 @@ def startServices():
     deployments = config.getValue("deployments", {})
     for devicename in deployments[deploymentType]:
         t=deployments[deploymentType][devicename]["type"]
+        logging.info("Starting "+t)
+
         hostmqtt.status({"starting": t})
 
         cmd = './'+t+'/main.py'
         process = subprocess.Popen(
-            ['sudo', cmd, myHostname, deploymentType, devicename],
+            [ cmd, myHostname, deploymentType, devicename],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
@@ -123,7 +125,7 @@ hostmqtt.status({"status": "STARTING"})
 hostsConfig = config.getValue("hosts", {})
 while myHostname not in hostsConfig:
     # request a config from the server
-    logging.info("Requesting config")
+    logging.info("Requesting config for "+myHostname+"/"+DEVICENAME+"/update_config")
     hostmqtt.publish("requestconfig", {
         #host type, ip, other things
     })
@@ -133,10 +135,14 @@ logging.info("Starting services")
 
 startServices()
 
+logging.info("Done starting services")
+
 hostmqtt.status({"status": "listening"})
 
 try:
-    hostmqtt.loop_forever()
+    while True:
+        time.sleep(1)
+    #hostmqtt.loop_forever()
 except Exception as ex:
     logging.error("Exception occurred", exc_info=True)
 except KeyboardInterrupt:
