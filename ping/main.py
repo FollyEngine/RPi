@@ -55,6 +55,7 @@ STATUS="red"
 hostmqtt.subscribe("reply", msg_play)
 hostmqtt.status({"status": "listening"})
 
+git_commit = "NOT-GIT"
 try:
     git_commit = subprocess.check_output(
         "git log --oneline -1",
@@ -62,6 +63,11 @@ try:
         universal_newlines=True,
         shell=True
         )
+except Exception as ex:
+    logging.error("Git failed, ignoring", exc_info=True)
+
+
+try:
     lastStatus = datetime.datetime.min
     while True:
         STATUS="red"
