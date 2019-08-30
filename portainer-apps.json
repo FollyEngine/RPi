@@ -5,7 +5,6 @@
         "description": "node status ping",
         "image": "follyengine/ping:latest",
         "note": "v0.1.2",
-        "categories": ["follyengine"],
         "platform": "linux",
         "command": "/src/ping/main.py detect unknown ping",
         "network": "host",
@@ -16,12 +15,24 @@
         "title": "Folly audio",
         "description": "play sounds",
         "note": "v0.1.1",
-        "categories": ["follyengine"],
         "platform": "linux",
         "repository": {
           "url": "https://github.com/follyengine/RPi",
           "stackfile": "portainer/audio.yml"
-        }
+        },
+        "categories": ["follyengine", "node-red"]
+      },
+      {
+        "type": 2,
+        "title": "Folly audio - broken, can't use device in swarm compose",
+        "description": "play sounds",
+        "note": "v0.1.1",
+        "platform": "linux",
+        "repository": {
+          "url": "https://github.com/follyengine/RPi",
+          "stackfile": "portainer/audio.yml"
+        },
+        "categories": ["follyengine", "node-red"]
       }
 ]
 
