@@ -1,13 +1,8 @@
-version "3.7"
+version: "3.7"
 services:
   audio:
     image: follyengine/audio
+    command: yoga260 megagame audio
     devices:
-      - "/dev/snd:/dev/snd"
-    networks:
-      hostnet: {}
-
-networks:
-  hostnet:
-    external:
-      name: host
+      - /dev/snd
+    network_mode: "host"
