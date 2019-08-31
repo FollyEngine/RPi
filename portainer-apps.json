@@ -14,7 +14,7 @@
         "type": 3,
         "title": "Folly audio",
         "description": "play sounds",
-        "note": "v0.1.5",
+        "note": "v0.1.6",
         "platform": "linux",
         "repository": {
           "url": "https://github.com/follyengine/RPi",
@@ -26,7 +26,7 @@
         "type": 2,
         "title": "Folly audio - broken, can't use device in swarm compose",
         "description": "play sounds",
-        "note": "v0.1.5",
+        "note": "v0.1.6",
         "platform": "linux",
         "repository": {
           "url": "https://github.com/follyengine/RPi",
