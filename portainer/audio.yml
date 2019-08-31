@@ -2,7 +2,7 @@ version: '2.4'
 services:
   audio:
     image: follyengine/audio
-    command: yoga260 megagame audio
+    command: "yoga260 megagame audio"
     devices:
       - /dev/snd
     network_mode: "host"
