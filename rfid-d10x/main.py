@@ -47,7 +47,7 @@ def readreply(ser):
             address = int.from_bytes(a, byteorder="big")
             data = int.from_bytes(d, byteorder="big")
             crc = int.from_bytes(c, byteorder="big")
-            #logging.info("READ: address = %s data == %s" % (format(address, '#04x'), format(data, '#04x')))
+            #logging.info("READ: type: %s, length: %d, address = %s data == %s" % (format(packet_type, '#04x'), length, format(address, '#04x'), format(data, '#04x')))
 
             return length, packet_type, data
     return 0, 0, "nothing"
@@ -199,6 +199,11 @@ cmd_set_impinj_fast_tid = 0x8C #Set impinj FastTID function.  #(Without saving t
 cmd_set_and_save_impinj_fast_tid = 0x8D #Set impinj FastTID function.  #(Save to FLASH)
 cmd_get_impinj_fast_tid = 0x8E #Get current FastTID setting.
 
+def realTimeInventory(ser_connection, publicAddress):
+    logging.info("------------------------------------- cmd_real_time_inventory")
+    writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+
+
 version = ""
 power = ""
 region = ""
@@ -307,8 +312,10 @@ with serial.Serial(
             # logging.info(rf_link_profile)   # 1 byte
 
             # set buzzer off
+            # 31/08/2019 11:44:14 AM  A0 04 01 7A 00 E1
+            # 31/08/2019 11:44:14 AM  A0 04 01 7A 10 D1
             # logging.info("set beeper_mode == 0x00")
-            # writeCommand(ser_connection, publicAddress, cmd_set_beeper_mode, 4, 0x00)
+            # writeCommand(ser_connection, publicAddress, cmd_set_beeper_mode, 2, 0x00)
             # buzzer_off_status = readreply(ser_connection)
             # logging.info(buzzer_off_status)   # 1 byte
 
@@ -316,8 +323,7 @@ with serial.Serial(
             lastStatus = datetime.datetime.now()
             status(ser_connection)
 
-            logging.info("------------------------------------- cmd_real_time_inventory")
-            writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+            realTimeInventory(ser_connection, publicAddress)
 
             while True:
                 try:
@@ -332,7 +338,7 @@ with serial.Serial(
                     for EPC in lastKeys:
                         if lastTimeRead[EPC] != 0:
                             diff = now-lastTimeRead[EPC]
-                            logging.info("%s : %d microseconds" % (EPC, diff.microseconds))
+                            #logging.info("%s : %d microseconds" % (EPC, diff.microseconds))
                             if diff.microseconds > 200000:
                                 lastTimeRead[EPC] = 0
                                 sendRemoved(EPC, diff.microseconds)
@@ -341,20 +347,19 @@ with serial.Serial(
                     # note that there are at least 2 different replies
                     ## the response packet, and the tag info..
                     if length > 0:
-                        logging.info("read %d bytes: 0x%x" % (length, data))
+                        #logging.info("read %d bytes: 0x%x" % (length, data))
+                        # TODO: will get a 10 byte length response code after the timeout
+                        # presumably, you then set go again...
+                        if length == 10:
+                            realTimeInventory(ser_connection, publicAddress)
 
-                    # TODO: will get a 10 byte length response code after the timeout
-                    # presumably, you then set go again...
-                    if length == 10:
-                        thereisnofunction()
                 except Exception as ex:
                     logging.error("Exception occurred", exc_info=True)
                     logging.info("Send Reset")
                     #writeCommand(ser_connection, publicAddress, cmd_reset)
                     writeReset(ser_connection, publicAddress, cmd_reset)
                     sleep(1)
-                    logging.info("------------------------------------- cmd_real_time_inventory")
-                    writeCommand(ser_connection, publicAddress, cmd_real_time_inventory, 1, 0xff)
+                    realTimeInventory(ser_connection, publicAddress)
     except Exception as ex:
         logging.error("Exception occurred", exc_info=True)
     except KeyboardInterrupt:
