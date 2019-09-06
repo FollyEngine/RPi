@@ -24,6 +24,11 @@ mqttHost = config.getValue("mqtthostname", "localhost")
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
 hostmqtt.loop_start()   # use the background thread
 
+# TODO: mode can be "trigger" (uses lastTimeRead),
+#  "scan" - continuous insert messages for power-scanning,
+#  "<specific tag EPC>" - continuous scanning, but only output power of the specified tag
+MESSAGEMODE="3000e200001606180258170069a0"
+
 global lastTimeRead
 lastTimeRead = {}
 ########################################
@@ -68,10 +73,11 @@ def read_reply_real_time_inventory(ser):
     FreqAnt = hexData[0:2]
     TagPC = hexData[2:4]
     EPC = hexData[4:-2]
-    rssi = hexData[-2:]
+    rssiStr = hexData[-2:]
+    rssi = x = int(rssiStr, 16)
 
     publish = True
-    if EPC in lastTimeRead:
+    if MESSAGEMODE == "trigger" and EPC in lastTimeRead:
         if lastTimeRead[EPC] != 0:
             publish = False # only send the message once - see expire in the main loop
 
@@ -83,22 +89,34 @@ def read_reply_real_time_inventory(ser):
     elif TagPC == "00":
         return length, packet_type, data
 
-    # TODO: should filter these to not include the 00000000700000 type id's
-    lastTimeRead[EPC] = datetime.datetime.now()
+    if MESSAGEMODE == "trigger":
+        # TODO: should filter these to not include the 00000000700000 type id's
+        lastTimeRead[EPC] = datetime.datetime.now()
+    elif MESSAGEMODE == "scan":
+        publish = True
+    else: # MESSAGEMODE == specific EPC, continuously publish it's rssi
+        if MESSAGEMODE != EPC:
+            publish = False
+
 
     if publish == True:
-        event = {
-            #'data': "%x" % data,
-            #'packet_type': packet_type,
-            "FreqAnt": FreqAnt,
-            "TagPC": TagPC,
-            "tag": EPC,
-            "rssi": rssi,
-            'event': 'inserted'
-        }
-        hostmqtt.publish("scan", event)
+        sendInserted(MESSAGEMODE, EPC, FreqAnt, TagPC, rssi)
 
     return length, packet_type, data
+
+def sendInserted(mode, EPC, FreqAnt, TagPC, rssi):
+    event = {
+        #'data': "%x" % data,
+        #'packet_type': packet_type,
+        "FreqAnt": FreqAnt,
+        "TagPC": TagPC,
+        "tag": EPC,
+        "rssi": rssi,
+        'event': 'inserted',
+        'mode': mode
+    }
+    hostmqtt.publish("scan", event)
+
 
 def sendRemoved(EPC, diff):
     event = {
