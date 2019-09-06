@@ -27,7 +27,7 @@ hostmqtt.loop_start()   # use the background thread
 # TODO: mode can be "trigger" (uses lastTimeRead),
 #  "scan" - continuous insert messages for power-scanning,
 #  "<specific tag EPC>" - continuous scanning, but only output power of the specified tag
-MESSAGEMODE="3000e200001606180258170069a0"
+MESSAGEMODE="scan"
 
 global lastTimeRead
 lastTimeRead = {}
@@ -254,9 +254,22 @@ def status(ser_connection):
         "region": region,
         "status": "listening"})
 ########################################
+# mosquitto_pub -t all/rfid/mode -m '{"mode": "trigger"}'
+# mosquitto_pub -t all/rfid/mode -m '{"mode": "scan"}'
+# mosquitto_pub -t all/rfid/mode -m '{"mode": "3000e200001606180258170069a0"}'
+# mosquitto_pub -t yoga260/rfid/mode -m '{"mode": "3000e200001606180258170069a0"}'
+# 
 
 
+def set_mode(topic, payload):
+    global MESSAGEMODE
+    MESSAGEMODE = mqtt.get(payload, 'mode', 'scan')
+    logging.info("setmode: %s" % MESSAGEMODE)
 
+hostmqtt.subscribe("mode", set_mode)
+hostmqtt.subscribeL("all", DEVICENAME, "mode", set_mode)
+
+########################################
 publicAddress = 0x01
 
 #The physical interface is compatible with the RS – 232 specifications. 
