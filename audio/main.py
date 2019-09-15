@@ -131,17 +131,17 @@ def clicker_loop():
     global clickchance, clickchange_set_time
     clicks=0
     loops=0
-    max = 100 ** 4
+    max = 100 ** 5
     while True:
         loops = loops+1
         r = random.randint(1,max+1)
         if r <= clickchance:
             clicks = clicks+1
             midiplay()
-        # TODO: atm, we can only manage less then 10 clicks a second
-            time.sleep(0.01)
+        # TODO: we can only manage less then 10 clicks a second when using the blocking sound.play()
+            time.sleep(0.0001)
         else:
-            time.sleep(0.001)
+            time.sleep(0.0001)
         if clickchance > 0:
             if (clickchange_set_time + 100) < (time.time_ns() // 1000000):
                 logging.debug("clicked %d/%d (%d/%d)" % (clicks, loops, clickchance, max))
@@ -158,12 +158,12 @@ def msg_midi(topic, payload):
     global clickchance, clickchange_set_time
     rssi = mqtt.get(payload, "rssi", 100)
     clickchance = 2*(rssi-50)
-    clickchance = clickchance ** 4
+    clickchance = clickchance ** 5
     clickchange_set_time = time.time_ns() // 1000000
     #logging.debug("chance: %d / 100" % clickchance)
 
 click_sound = 0
-def midiplay(duration = 0.00005, frequency_l = 4400, frequency_r = 5500):
+def midiplay(duration = 0.0001, frequency_l = 4400, frequency_r = 5500):
     global click_sound
     if click_sound == 0:
         bits = 16
@@ -191,9 +191,11 @@ def midiplay(duration = 0.00005, frequency_l = 4400, frequency_r = 5500):
             buf[s][0] = int(round(max_sample*math.sin(2*math.pi*frequency_l*t)))        # left
             buf[s][1] = int(round(max_sample*0.5*math.sin(2*math.pi*frequency_r*t)))    # right
 
+        #click_sound = pygame.sndarray.make_sound(buf)
         click_sound = pygame.sndarray.make_sound(buf)
     #play once,  (-1 loops forever)
-    click_sound.play(loops = 1)
+    #click_sound.play(loops = 1)    # blocking
+    pygame.mixer.find_channel(True).queue(click_sound)
 
 
 ########################################
