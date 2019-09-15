@@ -9,6 +9,7 @@ import logging
 # for midi generation
 import math
 import numpy
+import random
 
 
 # the config and mqtt modules are in a bad place atm :/
@@ -23,7 +24,7 @@ DEVICENAME=config.getDevicename()
 
 mqttHost = config.getValue("mqtthostname", "localhost")
 hostmqtt = mqtt.MQTT(mqttHost, myHostname, DEVICENAME)
-#hostmqtt.loop_start()   # use the background thread
+hostmqtt.loop_start()   # use the background thread
 
 sounddir = config.getValue("sounddir", "../../sounds/")
 testsound = config.getValue("testsound", "test.wav")
@@ -62,7 +63,8 @@ def main():
     try:
         #while True:
         #    time.sleep(1)
-        hostmqtt.loop_forever()
+        # hostmqtt.loop_forever()
+        clicker_loop()
     except Exception as ex:
         logging.error("Exception occurred", exc_info=True)
     except KeyboardInterrupt:
@@ -122,38 +124,76 @@ def msg_unmute(topic, payload):
     isMuted = False
     logging.info("unmuted")
 
+
+clickchance=0
+clickchange_set_time=0
+def clicker_loop():
+    global clickchance, clickchange_set_time
+    clicks=0
+    loops=0
+    max = 100 ** 4
+    while True:
+        loops = loops+1
+        r = random.randint(1,max+1)
+        if r <= clickchance:
+            clicks = clicks+1
+            midiplay()
+        # TODO: atm, we can only manage less then 10 clicks a second
+            time.sleep(0.01)
+        else:
+            time.sleep(0.001)
+        if clickchance > 0:
+            if (clickchange_set_time + 100) < (time.time_ns() // 1000000):
+                logging.debug("clicked %d/%d (%d/%d)" % (clicks, loops, clickchance, max))
+                clickchance = 0
+                clicks=0
+                loops=0
+
+
+# for the void-detector
+# the yellow rfid reader takes ~120ms between reads
+# the rssi from the square takes seems to go between 50 and 100
+# so what if we use 2*(rssi-50) as how many clicks we should hear in the next 120ms
 def msg_midi(topic, payload):
-    midiplay()
+    global clickchance, clickchange_set_time
+    rssi = mqtt.get(payload, "rssi", 100)
+    clickchance = 2*(rssi-50)
+    clickchance = clickchance ** 4
+    clickchange_set_time = time.time_ns() // 1000000
+    #logging.debug("chance: %d / 100" % clickchance)
 
-def midiplay(duration = 0.0005, frequency_l = 440, frequency_r = 550):
-    bits = 16
-    ## Really show duration gext us a click
-    duration = 0.0005         # in seconds
-    #freqency for the left speaker
-    frequency_l = 440
-    #frequency for the right speaker
-    frequency_r = 550
+click_sound = 0
+def midiplay(duration = 0.00005, frequency_l = 4400, frequency_r = 5500):
+    global click_sound
+    if click_sound == 0:
+        bits = 16
+        ## Really show duration gext us a click
+        #duration = 0.0005         # in seconds
+        #freqency for the left speaker
+        #frequency_l = 440
+        #frequency for the right speaker
+        #frequency_r = 550
 
-    #this sounds totally different coming out of a laptop versus coming out of headphones
+        #this sounds totally different coming out of a laptop versus coming out of headphones
 
-    sample_rate = 44100
+        sample_rate = 44100
 
-    n_samples = int(round(duration*sample_rate))
+        n_samples = int(round(duration*sample_rate))
 
-    #setup our numpy array to handle 16 bit ints, which is what we set our mixer to expect with "bits" up above
-    buf = numpy.zeros((n_samples, 2), dtype = numpy.int16)
-    max_sample = 2**(bits - 1) - 1
+        #setup our numpy array to handle 16 bit ints, which is what we set our mixer to expect with "bits" up above
+        buf = numpy.zeros((n_samples, 2), dtype = numpy.int16)
+        max_sample = 2**(bits - 1) - 1
 
-    for s in range(n_samples):
-        t = float(s)/sample_rate    # time in seconds
+        for s in range(n_samples):
+            t = float(s)/sample_rate    # time in seconds
 
-        #grab the x-coordinate of the sine wave at a given time, while constraining the sample to what our mixer is set to with "bits"
-        buf[s][0] = int(round(max_sample*math.sin(2*math.pi*frequency_l*t)))        # left
-        buf[s][1] = int(round(max_sample*0.5*math.sin(2*math.pi*frequency_r*t)))    # right
+            #grab the x-coordinate of the sine wave at a given time, while constraining the sample to what our mixer is set to with "bits"
+            buf[s][0] = int(round(max_sample*math.sin(2*math.pi*frequency_l*t)))        # left
+            buf[s][1] = int(round(max_sample*0.5*math.sin(2*math.pi*frequency_r*t)))    # right
 
-    sound = pygame.sndarray.make_sound(buf)
+        click_sound = pygame.sndarray.make_sound(buf)
     #play once,  (-1 loops forever)
-    sound.play(loops = 1)
+    click_sound.play(loops = 1)
 
 
 ########################################

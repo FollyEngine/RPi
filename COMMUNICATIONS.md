@@ -141,6 +141,13 @@ payload:
     "time": "<date-time in isoformat>",
 }
 ```
+and
+```
+tag: <hostname>/<devicename>/midiplay
+payload: 
+{
+}
+```
 
 When its finished playing the sound, the service will reply with:
 
