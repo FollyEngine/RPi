@@ -46,7 +46,7 @@ build-rfid-d10x:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/rfid-d10x -f Dockerfile.rfid-d10x .
 
 build-audio:
-	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/audio -f Dockerfile.audio .
+	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/audio:pyo -f Dockerfile.audio .
 
 push:
 	docker push ${RFIDIMAGE}
