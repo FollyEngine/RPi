@@ -8,6 +8,7 @@ import logging
 # for UHF RFID reader - the yellow one...
 # D-10X
 
+# docker run --rm -it --net host --device /dev/ttyUSB0 "follyengine"/rfid-d10x detect megagame rfid
 
 # the config and mqtt modules are in a bad place atm :/
 import sys

@@ -31,11 +31,21 @@ run:
 shell:
 	docker run --rm -it  --privileged -v /dev/bus/usb:/dev/bus/usb $(RFIDIMAGE) bash
 
-build:
+build: build-base build-ping build-neopixels build-rfid-d10x build-audio
+
+build-base:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/base -f Dockerfile.base .
+
+build-ping:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/ping -f Dockerfile.ping .
+
+build-neopixels:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/neopixels -f Dockerfile.neopixels .
+
+build-rfid-d10x:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/rfid-d10x -f Dockerfile.rfid-d10x .
+
+build-audio:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/audio -f Dockerfile.audio .
 
 push:

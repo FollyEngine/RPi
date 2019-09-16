@@ -7,4 +7,4 @@ COPY rfid-d10x /src/rfid-d10x/
 RUN pip3 install --no-cache-dir -r /src/rfid-d10x/requirements.txt
 RUN apt-get install -yq python3-serial
 
-ENTRYPOINT /src/rfid-d10x/main.py
+ENTRYPOINT [ "/src/rfid-d10x/main.py" ]
