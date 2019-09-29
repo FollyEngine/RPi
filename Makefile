@@ -4,7 +4,8 @@ HUBORG="follyengine"
 
 RFIDIMAGE="$(HUBORG)/rfid"
 ID:=$(shell id -u)
-PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6"
+# linux/arm64
+PLATFORMS="linux/amd64,linux/arm/v7,linux/arm/v6"
 
 audio:
 	docker run -it \
@@ -31,7 +32,7 @@ run:
 shell:
 	docker run --rm -it  --privileged -v /dev/bus/usb:/dev/bus/usb $(RFIDIMAGE) bash
 
-build: build-base build-ping build-neopixels build-rfid-d10x build-audio
+build: build-base build-ping build-neopixels build-rfid-d10x build-audio build-crickit
 
 build-base:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/base -f Dockerfile.base .
@@ -48,9 +49,8 @@ build-rfid-d10x:
 build-audio:
 	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/audio:pyo -f Dockerfile.audio .
 
-push:
-	docker push ${RFIDIMAGE}
-
+build-crickit:
+	docker buildx build --platform $(PLATFORMS) --pull --push -t $(HUBORG)/crickit:latest -f Dockerfile.crickit .
 
 make-pulseaudio-volume:
 	docker volume rm pulseaudio || true

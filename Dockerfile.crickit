@@ -1,0 +1,10 @@
+FROM follyengine/base
+
+# docker run --rm -it --net host --device /dev/i2c-1  follyengine/crickit crickit-1 megagame crickit
+# mosquitto_pub -t "void-detector/audio/play" -m '{"sound": "Bubbles.wav"}'
+
+# crickit
+COPY crickit /src/crickit/
+RUN /src/crickit/setup.sh
+
+ENTRYPOINT [ "/src/crickit/main.py" ]
